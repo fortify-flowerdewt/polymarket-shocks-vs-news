@@ -190,7 +190,7 @@ const tickValues = [-168, -72, -24, -3, -0.5, 0, 0.5, 3, 24, 72, 168];
 return {fmtHourTick,tickValues};
 }});
 
-define({id: "92be97ea", inputs: ["display","Plot","tickValues","fmtHourTick","histogram"], body: (display,Plot,tickValues,fmtHourTick,histogram) => {
+define({id: "d5e8cf89", inputs: ["display","Plot","tickValues","fmtHourTick","histogram"], body: (display,Plot,tickValues,fmtHourTick,histogram) => {
 display(Plot.plot({
   height: 260,
   marginLeft: 45,
@@ -202,7 +202,7 @@ display(Plot.plot({
     labelOffset: 32,
     type: "symlog",
     domain: [-200, 200],
-    tickValues,
+    ticks: tickValues,
     tickFormat: fmtHourTick,
     tickSize: 4,
   },
@@ -549,7 +549,7 @@ return {auditList};
 <div class="panel">
   <div class="panel-h">Lead/lag distribution <span class="panel-sub">Δt = shock − Wikipedia edit, hours</span></div>
 <div class="observablehq observablehq--block"><!--:6db7b33d:--></div>
-<div class="observablehq observablehq--block"><observablehq-loading></observablehq-loading><!--:92be97ea:--></div>
+<div class="observablehq observablehq--block"><observablehq-loading></observablehq-loading><!--:d5e8cf89:--></div>
   <div class="panel-foot muted">Ticks sit at the band thresholds (±30m, ±3h) and human time-units (1d, 3d, 1w). Grey centre = inside detector resolution.</div>
 </div>
 <div class="panel">

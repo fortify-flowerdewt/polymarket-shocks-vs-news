@@ -137,7 +137,7 @@ display(Plot.plot({
     labelOffset: 32,
     type: "symlog",
     domain: [-200, 200],
-    tickValues,
+    ticks: tickValues,
     tickFormat: fmtHourTick,
     tickSize: 4,
   },
