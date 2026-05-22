@@ -15,7 +15,8 @@ dashboard/.observablehq/cache/
 
 # ---- Large raw data (regenerable) ----
 # HuggingFace dataset + derived OHLCV parquet shards (~900 MB).
-data/
+# Root-anchored so we don't accidentally exclude dashboard/src/data/.
+/data/
 
 # ---- Caches and intermediate parquets (regenerable from the data/ sources) ----
 output/wiki_cache.json
