@@ -105,6 +105,21 @@ html, body, #observablehq-main {
 /* Wikipedia byte-delta colours adjusted for light bg */
 /* (set inline in JS; tone down so they're still legible) */
 
+/* ---------- Exemplars ---------- */
+.exemplar {
+  background: var(--dash-panel);
+  border: 1px solid var(--dash-divider);
+  border-left: 4px solid #888;
+  box-shadow: var(--dash-shadow);
+}
+.exemplar .ex-cat, .exemplar .ex-date, .exemplar .ex-stats .muted { color: var(--dash-fg-muted); }
+.exemplar .ex-date { margin-left: auto; font-variant-numeric: tabular-nums; }
+.exemplar .ex-comment { background: rgba(15, 23, 42, 0.04); border-left: 2px solid rgba(15, 23, 42, 0.15); }
+.exemplar .ex-comment-label { color: var(--dash-fg-muted); }
+.exemplar .ex-comment-text { color: #334155; }
+.exemplar a { color: #1d4ed8; text-decoration: none; }
+.exemplar a:hover { text-decoration: underline; }
+
 /* ---------- Audit ---------- */
 .audit-details summary { background: rgba(251,146,60,0.12); }
 .audit-row { background: var(--dash-panel); border: 1px solid var(--dash-divider); border-left: 2px solid #fb923c; }

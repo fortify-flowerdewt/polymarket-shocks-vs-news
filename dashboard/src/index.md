@@ -227,6 +227,126 @@ display(catbars);
 </div>
 </div>
 
+<div class="panel panel-main exemplars-panel">
+  <div class="panel-h panel-h-big">Top cases per band <span class="panel-sub">cleanest 10 examples for each lead/lag bucket — each card shows the ±72 h price window with the shock marked</span></div>
+
+```js
+const exemplarBand = view(Inputs.radio(
+  summary.band_order,
+  {
+    label: html`<strong>Show top cases for band</strong>`,
+    value: "shock_clearly_first",
+    format: b => summary.band_labels[b],
+  }
+));
+```
+
+```js
+const bandToKey = {
+  shock_clearly_first: "shock_clearly_first_top10",
+  shock_first_marginal: "shock_first_marginal_top10",
+  simultaneous_uncertain: "simultaneous_top10",
+  news_first_marginal: "news_first_marginal_top10",
+  news_clearly_first: "news_clearly_first_top10",
+  no_news_in_window: "no_news_top10",
+};
+const currentExemplars = exemplars[bandToKey[exemplarBand]] || [];
+```
+
+```js
+// Per-exemplar price chart: ±72h window around the shock, with the shock
+// (band-coloured dashed rule) and any Wikipedia revisions in the window
+// (yellow ticks) overlaid on the price step-line.
+const exemplarPriceChart = (mid, shockT) => {
+  const det = marketsDetail[String(mid)];
+  if (!det || !det.series || !det.series.length) {
+    const d = document.createElement("div");
+    d.className = "muted small";
+    d.textContent = "no price series available";
+    return d;
+  }
+  const t0 = new Date(shockT).getTime();
+  const winMs = 72 * 3600 * 1000;
+  const series = det.series
+    .map(([ts, close, vol]) => ({timestamp: new Date(ts), close: +close, volume: +vol}))
+    .filter(r => Math.abs(+r.timestamp - t0) <= winMs);
+  if (!series.length) {
+    const d = document.createElement("div");
+    d.className = "muted small";
+    d.textContent = "no bars in ±72h window";
+    return d;
+  }
+  const wikiIn = (det.wiki || [])
+    .map(w => ({timestamp: new Date(w.t)}))
+    .filter(w => Math.abs(+w.timestamp - t0) <= winMs);
+  return Plot.plot({
+    height: 170,
+    width: 720,
+    marginLeft: 40,
+    marginBottom: 25,
+    x: {type: "utc", grid: true},
+    y: {label: "Probability", domain: [0, 1], grid: true},
+    marks: [
+      Plot.areaY(series, {x: "timestamp", y: "close", fill: "#3b82f6", fillOpacity: 0.12, curve: "step"}),
+      Plot.lineY(series, {x: "timestamp", y: "close", stroke: "#1d4ed8", strokeWidth: 1.4, curve: "step"}),
+      Plot.tickX(wikiIn, {x: "timestamp", stroke: "#d97706", strokeOpacity: 0.7, strokeWidth: 1.2, y: 0.02}),
+      Plot.ruleX([new Date(shockT)], {stroke: "#dc2626", strokeDasharray: "4,2", strokeWidth: 1.4}),
+    ],
+  });
+};
+
+const renderExemplar = (d) => {
+  const colour = summary.band_colors[d.band];
+  const card = document.createElement("div");
+  card.className = "exemplar";
+  card.style.borderLeftColor = colour;
+
+  const row = document.createElement("div");
+  row.className = "ex-row";
+  const badge = document.createElement("span");
+  badge.className = "badge";
+  badge.style.background = colour;
+  badge.textContent = summary.band_labels[d.band];
+  const cat = document.createElement("span"); cat.className = "ex-cat"; cat.textContent = d.category;
+  const date = document.createElement("span"); date.className = "ex-date"; date.textContent = fmtDate(d.shock_t);
+  row.append(badge, cat, date);
+
+  const title = document.createElement("h3"); title.textContent = d.question;
+
+  const stats = document.createElement("div"); stats.className = "ex-stats";
+  for (const [label, value, color] of [
+    ["Δ price", fmtPctSigned(d.dp), null],
+    ["Volume", fmtBigUsd(d.volume), null],
+    ["Δt vs Wiki", fmtHours(d.dt_nearest_hours), colour],
+    ["Wikipedia page", d.nearest_wiki_page
+      ? `<a href="https://en.wikipedia.org/wiki/${encodeURIComponent(d.nearest_wiki_page.replace(/ /g, "_"))}" target="_blank" rel="noopener">${d.nearest_wiki_page}</a>`
+      : "—", null],
+  ]) {
+    const b = document.createElement("div");
+    b.innerHTML = `<span class="muted">${label}</span><br><strong${color ? ` style="color:${color}"` : ""}>${value}</strong>`;
+    stats.append(b);
+  }
+  card.append(row, title, stats);
+
+  const cleaned = cleanWikiComment(d.nearest_comment);
+  if (cleaned) {
+    const c = document.createElement("div");
+    c.className = "ex-comment";
+    c.innerHTML = `<span class="ex-comment-label">Wikipedia edit summary</span> <span class="ex-comment-text">${cleaned}</span>`;
+    card.append(c);
+  }
+  card.append(exemplarPriceChart(d.market_id, d.shock_t));
+  return card;
+};
+
+const exemplarGrid = document.createElement("div");
+exemplarGrid.className = "exemplar-grid";
+for (const e of currentExemplars) exemplarGrid.append(renderExemplar(e));
+display(exemplarGrid);
+```
+
+</div>
+
 <div class="panel panel-main">
   <div class="panel-h panel-h-big">Browse all markets
     ${selectedBand ? html`<span class="filter-pill" onclick=${() => setSelectedBand(null)}>filtered to <strong style="color:${summary.band_colors[selectedBand]}">${summary.band_labels[selectedBand]}</strong> · clear ×</span>` : html`<span class="panel-sub">click any band above to filter · click a row to deep-dive</span>`}
@@ -533,6 +653,19 @@ display(auditList);
 
 .axis-key { text-align: center; margin-top: .25rem; font-size: 0.78rem; }
 .small { font-size: 0.8rem; }
+
+/* --- Exemplars (top cases per band) --- */
+.exemplars-panel { margin-bottom: 1.25rem; }
+.exemplar-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-top: 1rem; }
+.exemplar { border-radius: 8px; padding: 1rem; border-left: 4px solid #888; }
+.exemplar .ex-row { display: flex; gap: .75rem; align-items: center; margin-bottom: .25rem; font-size: 0.85rem; }
+.exemplar .badge { color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; }
+.exemplar h3 { margin: .25rem 0 .75rem 0; font-size: 1rem; }
+.exemplar .ex-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: .5rem; }
+.exemplar .ex-stats .muted { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.exemplar .ex-comment { font-size: 0.82rem; margin: .25rem 0 .5rem 0; padding: .4rem .6rem; border-radius: 4px; }
+.exemplar .ex-comment-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+.exemplar .ex-comment-text { font-style: italic; }
 
 @media (max-width: 900px) {
   .kpi-strip { grid-template-columns: repeat(2, 1fr); }
