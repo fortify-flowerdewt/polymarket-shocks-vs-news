@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="generator" content="Observable Framework v1.13.4">
+<title>Methodology | Polymarket: Shocks vs News</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
+<link rel="preload" as="style" href="./_observablehq/theme-near-midnight.07766c04.css">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-near-midnight.07766c04.css">
+<link rel="modulepreload" href="./_observablehq/client.00f37301.js">
+<link rel="modulepreload" href="./_observablehq/runtime.607a8173.js">
+<link rel="modulepreload" href="./_observablehq/stdlib.277aeab8.js">
+<script type="module">
+
+import {define} from "./_observablehq/client.00f37301.js";
+
+define({id: "7ae665b8", mode: "inline", inputs: ["display"], body: async (display) => {
+display(await(
+ Math.round(0) || "327"
+))
+}});
+
+define({id: "ba2ef4f6", mode: "inline", inputs: ["display"], body: async (display) => {
+display(await(
+ Math.round(0) || "286"
+))
+}});
+
+</script>
+</head>
+<body>
+<input id="observablehq-sidebar-toggle" type="checkbox" title="Toggle sidebar">
+<label id="observablehq-sidebar-backdrop" for="observablehq-sidebar-toggle"></label>
+<nav id="observablehq-sidebar">
+  <ol>
+    <label id="observablehq-sidebar-close" for="observablehq-sidebar-toggle"></label>
+    <li class="observablehq-link"><a href="./">Polymarket: Shocks vs News</a></li>
+  </ol>
+  <ol>
+    <li class="observablehq-link"><a href="./">Dashboard</a></li>
+    <li class="observablehq-link observablehq-link-active"><a href="./methodology">Methodology</a></li>
+  </ol>
+</nav>
+<script>{const e=document.querySelector("#observablehq-sidebar"),o=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?o.checked=r==="true":o.indeterminate=!0;for(const t of document.querySelectorAll("#observablehq-sidebar summary")){const s=t.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${t.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
+<div id="observablehq-center">
+<main id="observablehq-main" class="observablehq">
+<h1 id="methodology" tabindex="-1"><a class="observablehq-header-anchor" href="#methodology">Methodology</a></h1>
+<h2 id="what-we-are-testing" tabindex="-1"><a class="observablehq-header-anchor" href="#what-we-are-testing">What we are testing</a></h2>
+<p>For a binary prediction market with a true probability θ, an efficient market reacts to <strong>public</strong> information as it arrives. A trade that moves the price <em>before</em> the information is public is, by definition, trading on private information — possibly inside knowledge.</p>
+<p>We operationalise this as:</p>
+<p>$$\Delta t = t_\text{shock} - t_\text{news}$$</p>
+<ul>
+<li>$\Delta t &gt; 0$: news preceded the shock (the <strong>expected</strong> pattern for efficient markets reacting to public information).</li>
+<li>$\Delta t &lt; 0$: the shock preceded the news (the pattern consistent with <strong>insider trading</strong>, <em>modulo two important caveats</em>).</li>
+</ul>
+<p>The two caveats — which dominate the design of the rest of this page — are:</p>
+<ol>
+<li><strong>Wikipedia lags news</strong>, so a small negative Δt may just mean the market reacted faster than an editor reached a keyboard. We handle this with graduated <strong>bands</strong> (below) so that anything inside ±30 min is explicitly un-adjudicable, and only Δt &lt; −3 h is treated as decisive.</li>
+<li><strong>Some markets resolve on live public information that doesn't show up on Wikipedia</strong> (exit polls, live award ceremonies, floor votes). For these the "shock leads Wikipedia" finding is mechanically true but analytically meaningless. We handle this with an explicit <strong>scheduled-event spuriousness filter</strong> (below).</li>
+</ol>
+<h2 id="data" tabindex="-1"><a class="observablehq-header-anchor" href="#data">Data</a></h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Source</th>
+<th>Span</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trades</td>
+<td><code>vgregoire/polymarket-users</code> on HuggingFace (Akey, Grégoire, Harvie &amp; Martineau 2026)</td>
+<td>Nov 11 2022 – Mar 29 2026</td>
+</tr>
+<tr>
+<td>Market metadata</td>
+<td>Polymarket Gamma API (titles, slugs, tags, resolution)</td>
+<td>same</td>
+</tr>
+<tr>
+<td>Hourly OHLCV</td>
+<td>Reconstructed from raw trades, outcome_idx = 0 per market</td>
+<td>same</td>
+</tr>
+<tr>
+<td>News</td>
+<td>Wikipedia revision history via MediaWiki API</td>
+<td>full coverage</td>
+</tr>
+<tr>
+<td>News (planned)</td>
+<td>GDELT 2.0 Events DOC API</td>
+<td>full coverage</td>
+</tr>
+</tbody>
+</table>
+<p>We use the <strong>outcome_idx = 0</strong> token as a single reference price per market (so a Yes/No market is represented by its Yes price).</p>
+<h2 id="shock-detection" tabindex="-1"><a class="observablehq-header-anchor" href="#shock-detection">Shock detection</a></h2>
+<p>A shock is an hour-bar <code>close</code> that satisfies all of:</p>
+<ul>
+<li><code>|Δp| ≥ 5 percentage points</code>  (absolute floor)</li>
+<li><code>|Δp| ≥ 3 · σ_rolling</code>         (relative to a 7-day rolling close-to-close volatility)</li>
+<li><code>volume ≥ $1,000</code>              (ignore noise on illiquid bars)</li>
+<li><code>gap ≤ 6 hours</code>                (the previous bar is recent — avoids attributing multi-day drift)</li>
+</ul>
+<p>We then <strong>shortlist</strong> to high-impact shocks for news matching:</p>
+<ul>
+<li>categories in {Politics, Tech, Culture, Finance, Weather} (sports markets are reactive to live play — separate study)</li>
+<li>bar volume ≥ $50 000</li>
+<li><code>|Δp| ≥ 10 pp</code></li>
+</ul>
+<p>This yields <strong>1,154 shocks across 741 markets</strong>. After applying both Filter 1 (novelty) and Filter 2 (scheduled-event spuriousness), <strong>559 shocks</strong> are used for the headline counts on the dashboard.</p>
+<h2 id="news-matching-wikipedia" tabindex="-1"><a class="observablehq-header-anchor" href="#news-matching-wikipedia">News matching (Wikipedia)</a></h2>
+<p>For each market we:</p>
+<ol>
+<li><strong>Strip prefix.</strong> Drop "Will / Did / Is …" and the trailing question mark from the question text.</li>
+<li><strong>Search.</strong> Query the MediaWiki search API; keep the top-3 page titles.</li>
+<li><strong>Pull revisions.</strong> For each candidate page, request all revisions in <code>[market_start − 7 days, market_close + 7 days]</code>. Apply redirects.</li>
+<li><strong>Filter to substantive.</strong> Keep revisions whose byte-size delta against the previous revision is ≥ 200 bytes (drops typos, rollback chains, vandalism reverts).</li>
+</ol>
+<p>Some markets are excluded because:</p>
+<ul>
+<li>the relevant article was <em>created after</em> the market window (e.g., "Timeline of the 2026 Iran war" did not exist until June 2025);</li>
+<li>the question is a novelty market with no encyclopedic article (e.g., "Will Elon tweet 180–194 times in this 7-day window?");</li>
+<li>Wikipedia search returns a high-traffic adjacent page rather than the topical one.</li>
+</ul>
+<h2 id="alignment" tabindex="-1"><a class="observablehq-header-anchor" href="#alignment">Alignment</a></h2>
+<p>For each shock we look for the nearest substantive Wikipedia revision among that market's candidate pages, in <code>[shock − 7d, shock + 7d]</code>. We record three pairings per shock:</p>
+<ul>
+<li><strong>nearest</strong> (either side, smallest <code>|Δt|</code>)</li>
+<li><strong>preceding</strong> (smallest positive <code>Δt</code>)</li>
+<li><strong>following</strong> (smallest negative <code>Δt</code>)</li>
+</ul>
+<h2 id="graduated-classification-bands" tabindex="-1"><a class="observablehq-header-anchor" href="#graduated-classification-bands">Graduated classification (bands)</a></h2>
+<p>The detector runs on hourly OHLCV bars, so the shock_time has ~1h resolution. A nearest-Wikipedia Δt of, say, "4 min" doesn't carry the same weight as "12 hours" — we don't know <em>when</em> within the hour the price actually moved. We therefore classify each shock into one of six bands:</p>
+<table>
+<thead>
+<tr>
+<th>Band</th>
+<th>Threshold</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>shock_clearly_first</code></td>
+<td>Δt &lt; −3 h</td>
+<td>Decisive: price moved hours before any encyclopaedic edit.</td>
+</tr>
+<tr>
+<td><code>shock_first_marginal</code></td>
+<td>−3 h ≤ Δt &lt; −30 min</td>
+<td>Suggestive but not decisive.</td>
+</tr>
+<tr>
+<td><code>simultaneous_uncertain</code></td>
+<td>−30 min ≤ Δt ≤ +30 min</td>
+<td>Inside the detector's own resolution. We cannot adjudicate.</td>
+</tr>
+<tr>
+<td><code>news_first_marginal</code></td>
+<td>+30 min &lt; Δt ≤ +3 h</td>
+<td>News leads, but plausibly within news-cycle latency.</td>
+</tr>
+<tr>
+<td><code>news_clearly_first</code></td>
+<td>Δt &gt; +3 h</td>
+<td>Decisive: the market reacted to public news.</td>
+</tr>
+<tr>
+<td><code>no_news_in_window</code></td>
+<td>no revision in ±7 d</td>
+<td>Niche topic or undocumented event.</td>
+</tr>
+</tbody>
+</table>
+<p>Headline counts always report each band separately. We deliberately <em>do not</em> aggregate across the resolution boundary.</p>
+<h2 id="filter-1-novelty-markets" tabindex="-1"><a class="observablehq-header-anchor" href="#filter-1-novelty-markets">Filter 1 — novelty markets</a></h2>
+<p>We remove "novelty" markets that resolve on live broadcast minutia. The regex matches questions containing:
+<code>say "…"</code>, <code>say … during</code>, <code>tweet</code>, <code>post … tweets</code>, <code>word</code>, <code>mention</code>, <code>interview</code>, <code>\d+ or more times</code>, <code>\d+–\d+ times</code>, <code>opens up or down</code>. These markets <em>do</em> generate large shocks (the price is the market watching a broadcast in real time) but they are not insider-trading candidates in the traditional sense.</p>
+<p>After this filter, <strong><observablehq-loading></observablehq-loading><!--:7ae665b8:--> of the 1,154 shortlist shocks</strong> are removed.</p>
+<h2 id="filter-2-scheduled-event-spuriousness" tabindex="-1"><a class="observablehq-header-anchor" href="#filter-2-scheduled-event-spuriousness">Filter 2 — scheduled-event spuriousness</a></h2>
+<p>The motivating example: a market like <em>"Will South Korea's presidential election winner get over 50% of the votes?"</em> matches Wikipedia article <em>2025 South Korean presidential election</em>. On election day, exit polls and partial counts give the market actionable, public-but-not-encyclopaedic information <em>for hours</em> before any editor adds the official result to the Wikipedia article. The market move precedes the Wikipedia edit not because of insider trading, but because the editor is waiting for the official call while the trader is reading the live exit-poll feed.</p>
+<p>The same pattern shows up in:</p>
+<ul>
+<li><strong>Live award ceremonies</strong> — Grammys, Oscars, Emmys, Eurovision, <em>The Game Awards</em>, Steam Awards, <em>TIME Person of the Year</em>, <em>Google Year in Search</em>.</li>
+<li><strong>Live floor / chamber votes</strong> — US Speaker first-ballot votes, leadership elections.</li>
+<li><strong>Election day vote-share buckets</strong> — "Will X win between 35% and 40%?"</li>
+<li><strong>Box-office reveals</strong> — opening-weekend gross thresholds.</li>
+</ul>
+<p>For these cases the "Δt &lt; 0" finding is mechanically true and analytically meaningless. We flag a shock as <strong>spurious</strong> if any of:</p>
+<ol>
+<li><strong>Wikipedia page title matches a scheduled-event pattern</strong>
+<code>\b(election|elections|primary|caucus|by-election|leadership election|grammy|oscar|emmy|tony award|academy award|brit award|billboard music award|eurovision|cannes|golden globe|critics' choice|sag award|year in search|person of the year|game of the year|the game awards|world cup final|super bowl|world series|stanley cup final|nba finals|speaker .* election|box office)\b</code></li>
+<li><strong>Question text matches a scheduled-event pattern</strong> — election win clauses, vote-share buckets like <code>35 to 40 %</code> or <code>win between 49% and 51%</code>, Game-Awards category names ("most innovative", "best narrative", "players' voice", etc.), search-trend phrases ("#1 searched person on Google"), live-vote phrases ("first ballot", "speaker … elected"), or box-office reveals.</li>
+<li><strong>Wikipedia edit comment indicates the official result</strong> — comment contains <code>result</code>, <code>winner</code>, <code>elected</code>, <code>projected winner</code>, <code>called for</code>, <code>congratulat</code>, <code>conceded</code>, <code>concession</code>, <code>wins the …</code>, <code>won the …</code>, or <code>exit poll</code>. This catches cases where the edit <em>is</em> the post-event announcement of the answer the market was asking about.</li>
+</ol>
+<p>After this filter, a further <strong><observablehq-loading></observablehq-loading><!--:ba2ef4f6:--> shocks</strong> are removed. The headline counts on the <a href="./">Dashboard</a> reflect the remaining set; an <em>Audit</em> panel on the dashboard lists the top filtered cases with the specific reason, so reviewers can inspect over-/under-filtering.</p>
+<p>The filter is intentionally conservative: we'd rather drop a borderline candidate (e.g., a primary-election market that <em>could</em> contain insider info) than leave an obviously spurious one in the headline. Note that this filter is heuristic — it catches the patterns we've identified explicitly. Categories of scheduled event we haven't enumerated will leak through; please <a href="https://github.com/wearefortify/polymarket-fraud" target="_blank" rel="noopener noreferrer">file an issue</a> with examples.</p>
+<h2 id="known-limitations" tabindex="-1"><a class="observablehq-header-anchor" href="#known-limitations">Known limitations</a></h2>
+<ol>
+<li><strong>Wikipedia lags news.</strong> For breaking events, the first encyclopedic edit lands minutes to hours after the original news. The graduated bands above are our primary defence — anything in <code>simultaneous_uncertain</code> is explicitly flagged as un-adjudicable. Decisive bands (&gt;3 h) are the headline claim. GDELT (press publication timestamps) is queued as the next layer to disambiguate the sub-hour cases.</li>
+<li><strong>Spuriousness filter is heuristic.</strong> Filter 2 above catches the live-broadcast patterns we've enumerated. New categories of scheduled event (e.g., a one-off product reveal stream that the market is watching) will leak through until we add them. The audit panel on the dashboard is the user-facing check; please flag categories we've missed.</li>
+<li><strong>Page-resolution noise.</strong> Wikipedia's search ranker sometimes prefers a high-traffic adjacent article over the topical one. For example, "Tim Walz Senate run before July" returns <em>2028 United States presidential election</em> as the first hit because that page has been heavily edited and shares keywords. We mitigate by querying the top-3 hits and keeping all substantive revisions across them; we do not currently re-rank.</li>
+<li><strong>No reference-class model.</strong> We compare against an absolute threshold, not against expected information content for a given event type.</li>
+<li><strong>Single price per market.</strong> We use <code>outcome_idx = 0</code>. For markets with three or more outcomes (e.g., conclave-with-many-candidates) a single token's price can be uninformative about other parts of the outcome distribution.</li>
+<li><strong>Resolved + unresolved together.</strong> We treat marked-to-market prices on still-open markets the same as realised closes. For <em>shock detection</em> this is fine; for <em>outcome conditioning</em> it would not be.</li>
+</ol>
+<h2 id="open-follow-ups" tabindex="-1"><a class="observablehq-header-anchor" href="#open-follow-ups">Open follow-ups</a></h2>
+<ul>
+<li><strong>Layer GDELT</strong> on top of Wikipedia. Score each shock against the first press-published article that mentions the question's entities. GDELT has 15-minute timestamps which should sharpen Δt by a lot.</li>
+<li><strong>Confirm exemplars manually.</strong> For each of the top-20 "shock-before-news" cases, find the actual news source (press release, on-chain transaction, leaked memo). The Pope Leo XIV market, for example, has well-documented anomalous trading hours before the white-smoke announcement.</li>
+<li><strong>Network / wallet attribution.</strong> Recompute the shock-to-news distribution conditional on whether the buyer is in the paper's top-1% wallets. Akey et al. show 76.5% of gains accrue to the top 1%; the natural question is whether <em>they</em> are concentrated in the suspicious tail of Δt.</li>
+<li><strong>Reference probability.</strong> Use a held-out forecast (poll average, base rate, sister-market price) as a benchmark for how much the price <em>should</em> have moved, then look at residual moves rather than raw Δp.</li>
+</ul>
+</main>
+<footer id="observablehq-footer">
+<nav><a rel="prev" href="./"><span>Polymarket: Shocks vs News</span></a></nav>
+<div>Source: Polymarket on-chain trades (Nov 2022 – Mar 2026) via vgregoire/polymarket-users; news: Wikipedia revisions (GDELT to follow).</div>
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="generator" content="Observable Framework v1.13.4">
+<title>Polymarket — Shocks vs News | Polymarket: Shocks vs News</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
+<link rel="preload" as="style" href="./_observablehq/theme-near-midnight.07766c04.css">
+<link rel="preload" as="style" href="./_observablehq/stdlib/inputs.f7bf0e12.css">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-near-midnight.07766c04.css">
+<link rel="stylesheet" type="text/css" href="./_observablehq/stdlib/inputs.f7bf0e12.css">
+<link rel="modulepreload" href="./_observablehq/client.00f37301.js">
+<link rel="modulepreload" href="./_observablehq/runtime.607a8173.js">
+<link rel="modulepreload" href="./_observablehq/stdlib.277aeab8.js">
+<link rel="modulepreload" href="./_npm/d3@7.9.0/66d82917.js">
+<link rel="modulepreload" href="./_npm/htl@1.0.0/87d6f6ef.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/inputs.3feeafb9.js">
+<link rel="modulepreload" href="./_npm/@observablehq/plot@0.6.17/a96a6bbb.js">
+<link rel="modulepreload" href="./_npm/d3-dsv@3.0.1/9cffc2bd.js">
+<link rel="modulepreload" href="./_npm/isoformat@0.2.1/18cbf477.js">
+<link rel="modulepreload" href="./_npm/d3-array@3.2.4/e93ca09f.js">
+<link rel="modulepreload" href="./_npm/d3-axis@3.0.0/0f2de24d.js">
+<link rel="modulepreload" href="./_npm/d3-brush@3.0.0/65eb105b.js">
+<link rel="modulepreload" href="./_npm/d3-chord@3.0.1/7ef8fb2e.js">
+<link rel="modulepreload" href="./_npm/d3-color@3.1.0/aeb57b94.js">
+<link rel="modulepreload" href="./_npm/d3-contour@4.0.2/1d2aed74.js">
+<link rel="modulepreload" href="./_npm/d3-delaunay@6.0.4/87adea64.js">
+<link rel="modulepreload" href="./_npm/d3-dispatch@3.0.1/9ba9c7f3.js">
+<link rel="modulepreload" href="./_npm/d3-drag@3.0.0/4202580c.js">
+<link rel="modulepreload" href="./_npm/d3-ease@3.0.1/cdd7e898.js">
+<link rel="modulepreload" href="./_npm/d3-fetch@3.0.1/b4e2ad9a.js">
+<link rel="modulepreload" href="./_npm/d3-force@3.0.0/5e804d15.js">
+<link rel="modulepreload" href="./_npm/d3-format@3.1.2/3785bf2d.js">
+<link rel="modulepreload" href="./_npm/d3-geo@3.1.1/40599fb3.js">
+<link rel="modulepreload" href="./_npm/d3-hierarchy@3.1.2/e49e792c.js">
+<link rel="modulepreload" href="./_npm/d3-interpolate@3.0.1/8d1e5425.js">
+<link rel="modulepreload" href="./_npm/d3-path@3.1.0/20d3f133.js">
+<link rel="modulepreload" href="./_npm/d3-polygon@3.0.1/7553081f.js">
+<link rel="modulepreload" href="./_npm/d3-quadtree@3.0.1/0dfd751c.js">
+<link rel="modulepreload" href="./_npm/d3-random@3.0.1/3c90ee06.js">
+<link rel="modulepreload" href="./_npm/d3-scale@4.0.2/720b7f0a.js">
+<link rel="modulepreload" href="./_npm/d3-scale-chromatic@3.1.0/ba24c2e7.js">
+<link rel="modulepreload" href="./_npm/d3-selection@3.0.0/4d94e5b7.js">
+<link rel="modulepreload" href="./_npm/d3-shape@3.2.0/6d3a6726.js">
+<link rel="modulepreload" href="./_npm/d3-time@3.1.0/9f03c579.js">
+<link rel="modulepreload" href="./_npm/d3-time-format@4.1.0/07c9626f.js">
+<link rel="modulepreload" href="./_npm/d3-timer@3.0.1/b58a267d.js">
+<link rel="modulepreload" href="./_npm/d3-transition@3.0.1/004da2ac.js">
+<link rel="modulepreload" href="./_npm/d3-zoom@3.0.0/b5786b3f.js">
+<link rel="modulepreload" href="./_npm/interval-tree-1d@1.0.4/53fe8176.js">
+<link rel="modulepreload" href="./_npm/internmap@2.0.3/e08981d9.js">
+<link rel="modulepreload" href="./_npm/delaunator@5.1.0/d4ec0aa1.js">
+<link rel="modulepreload" href="./_npm/binary-search-bounds@2.0.5/cbf6ba23.js">
+<link rel="modulepreload" href="./_npm/robust-predicates@3.0.3/42820bfa.js">
+<script type="module">
+
+import {define} from "./_observablehq/client.00f37301.js";
+import {registerFile} from "./_observablehq/stdlib.277aeab8.js";
+
+registerFile("./data/by_category.csv", {"name":"./data/by_category.csv","mimeType":"text/csv","path":"./_file/data/by_category.92c2cb8c.csv","lastModified":1779443528615,"size":241});
+registerFile("./data/exemplars.json", {"name":"./data/exemplars.json","mimeType":"application/json","path":"./_file/data/exemplars.15fd6911.json","lastModified":1779443528616,"size":47275});
+registerFile("./data/histogram.csv", {"name":"./data/histogram.csv","mimeType":"text/csv","path":"./_file/data/histogram.6fb445ba.csv","lastModified":1779443528616,"size":310});
+registerFile("./data/price_series.json", {"name":"./data/price_series.json","mimeType":"application/json","path":"./_file/data/price_series.828142c6.json","lastModified":1779443528646,"size":1784656});
+registerFile("./data/summary.json", {"name":"./data/summary.json","mimeType":"application/json","path":"./_file/data/summary.95307404.json","lastModified":1779443528646,"size":2577});
+
+define({id: "18f0ac65", inputs: ["FileAttachment"], outputs: ["summary","histogram","byCategory","exemplars","allSeries","seriesById"], body: async (FileAttachment) => {
+const summary = await FileAttachment("./data/summary.json").json();
+const histogram = await FileAttachment("./data/histogram.csv").csv({typed: true});
+const byCategory = await FileAttachment("./data/by_category.csv").csv({typed: true});
+const exemplars = await FileAttachment("./data/exemplars.json").json();
+const allSeries = await FileAttachment("./data/price_series.json").json();
+const seriesById = new Map(
+  Object.entries(allSeries).map(([mid, rows]) => [
+    +mid,
+    rows.map(r => ({timestamp: new Date(r.timestamp), close: +r.close})),
+  ])
+);
+return {summary,histogram,byCategory,exemplars,allSeries,seriesById};
+}});
+
+define({id: "7156dedc", inputs: ["d3"], outputs: ["fmtCount","fmtPct","fmtPctSigned","fmtDollars","fmtDate","fmtHours","cleanWikiComment"], body: (d3) => {
+const fmtCount = (n) => d3.format(",")(n);
+const fmtPct = (p) => d3.format(".0%")(p);
+const fmtPctSigned = (p) => `${p > 0 ? "+" : ""}${(p * 100).toFixed(1)} pp`;
+const fmtDollars = (v) => d3.format("$,.0f")(v);
+const fmtDate = (s) => s ? new Date(s).toUTCString().slice(5, 22) : "";
+const fmtHours = (h) => {
+  if (h == null) return "—";
+  const sign = h < 0 ? "−" : "+";
+  const a = Math.abs(h);
+  if (a < 1/60) return `${sign}${(a * 3600).toFixed(0)} s`;
+  if (a < 1) return `${sign}${(a * 60).toFixed(0)} min`;
+  if (a < 48) return `${sign}${a.toFixed(2)} h`;
+  return `${sign}${(a / 24).toFixed(1)} d`;
+};
+
+// Wikipedia edit comments are full of section anchors ("/* foo */"), wiki
+// markup, and rollback chatter. Strip the noise; return a tidy human string,
+// or null when the comment is purely procedural.
+const cleanWikiComment = (raw) => {
+  if (!raw) return null;
+  let s = String(raw).trim();
+  // Strip section anchors like "/* History */" — keep the section name if nothing else follows
+  const sectionAnchors = [...s.matchAll(/\/\*\s*([^*]+?)\s*\*\//g)].map(m => m[1].trim());
+  const afterAnchors = s.replace(/\/\*[^*]*\*\//g, "").trim();
+  if (afterAnchors) {
+    s = afterAnchors;
+  } else if (sectionAnchors.length) {
+    return `section: ${sectionAnchors[0]}`;
+  } else {
+    return null;
+  }
+  // Strip [[wiki links|display]] → display, [[plain link]] → plain link
+  s = s.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, "$2");
+  s = s.replace(/\[\[([^\]]+)\]\]/g, "$1");
+  // Strip Special:Diff hashes
+  s = s.replace(/Special:Diff\/\d+/g, "");
+  // Drop pure rollback / template stubs
+  if (/^(Undid revision|Reverting|Reverted edits|Restored revision|Tag: ?)/i.test(s)) return null;
+  // Collapse whitespace and trim
+  s = s.replace(/\s+/g, " ").trim();
+  // Drop if it became too short
+  if (s.length < 4) return null;
+  // Truncate long comments
+  if (s.length > 140) s = s.slice(0, 137) + "…";
+  return s;
+};
+return {fmtCount,fmtPct,fmtPctSigned,fmtDollars,fmtDate,fmtHours,cleanWikiComment};
+}});
+
+define({id: "e1445238", mode: "inline", inputs: ["fmtCount","summary","display"], body: async (fmtCount,summary,display) => {
+display(await(
+fmtCount(summary.n_shocks_in_shortlist_all)
+))
+}});
+
+define({id: "d50f800d", mode: "inline", inputs: ["fmtCount","summary","display"], body: async (fmtCount,summary,display) => {
+display(await(
+fmtCount(summary.n_excluded_novelty)
+))
+}});
+
+define({id: "c724669e", mode: "inline", inputs: ["fmtCount","summary","display"], body: async (fmtCount,summary,display) => {
+display(await(
+fmtCount(summary.n_excluded_spurious)
+))
+}});
+
+define({id: "c191b025", mode: "inline", inputs: ["fmtCount","summary","display"], body: async (fmtCount,summary,display) => {
+display(await(
+fmtCount(summary.n_shocks_in_shortlist)
+))
+}});
+
+define({id: "648621d5", mode: "inline", inputs: ["fmtHours","summary","display"], body: async (fmtHours,summary,display) => {
+display(await(
+fmtHours(summary.median_dt_nearest_hours)
+))
+}});
+
+define({id: "41fbf5a7", mode: "inline", inputs: ["fmtCount","summary","display"], body: async (fmtCount,summary,display) => {
+display(await(
+fmtCount(summary.band_counts.shock_clearly_first)
+))
+}});
+
+define({id: "f15a6b0a", mode: "inline", inputs: ["fmtPct","summary","display"], body: async (fmtPct,summary,display) => {
+display(await(
+fmtPct(summary.share_shock_clearly_first)
+))
+}});
+
+define({id: "11bfe5a9", mode: "inline", inputs: ["fmtCount","summary","display"], body: async (fmtCount,summary,display) => {
+display(await(
+fmtCount(summary.band_counts.simultaneous_uncertain)
+))
+}});
+
+define({id: "ad728806", mode: "inline", inputs: ["fmtPct","summary","display"], body: async (fmtPct,summary,display) => {
+display(await(
+fmtPct(summary.share_simultaneous_uncertain)
+))
+}});
+
+define({id: "031f7b68", mode: "inline", inputs: ["fmtCount","summary","display"], body: async (fmtCount,summary,display) => {
+display(await(
+fmtCount(summary.band_counts.news_clearly_first)
+))
+}});
+
+define({id: "d3e1c217", mode: "inline", inputs: ["fmtPct","summary","display"], body: async (fmtPct,summary,display) => {
+display(await(
+fmtPct(summary.share_news_clearly_first)
+))
+}});
+
+define({id: "67421132", mode: "inline", inputs: ["fmtCount","summary","display"], body: async (fmtCount,summary,display) => {
+display(await(
+fmtCount(summary.band_counts.shock_first_marginal)
+))
+}});
+
+define({id: "6c7a0f16", mode: "inline", inputs: ["fmtPct","summary","display"], body: async (fmtPct,summary,display) => {
+display(await(
+fmtPct(summary.share_shock_first_marginal)
+))
+}});
+
+define({id: "13b9cf9d", mode: "inline", inputs: ["fmtCount","summary","display"], body: async (fmtCount,summary,display) => {
+display(await(
+fmtCount(summary.band_counts.news_first_marginal)
+))
+}});
+
+define({id: "8c46b3bb", mode: "inline", inputs: ["fmtPct","summary","display"], body: async (fmtPct,summary,display) => {
+display(await(
+fmtPct(summary.share_news_first_marginal)
+))
+}});
+
+define({id: "9303cb94", mode: "inline", inputs: ["fmtCount","summary","display"], body: async (fmtCount,summary,display) => {
+display(await(
+fmtCount(summary.band_counts.no_news_in_window)
+))
+}});
+
+define({id: "b3d50e17", mode: "inline", inputs: ["fmtPct","summary","display"], body: async (fmtPct,summary,display) => {
+display(await(
+fmtPct(summary.band_counts.no_news_in_window / summary.n_shocks_in_shortlist)
+))
+}});
+
+define({id: "9f554377", inputs: ["Plot","histogram","display"], body: async (Plot,histogram,display) => {
+display(await(
+Plot.plot({
+  height: 300,
+  marginLeft: 50,
+  x: {label: "Δt = shock − news (hours, symlog)", type: "symlog", domain: [-200, 200], grid: true},
+  y: {label: "Count of shocks", grid: true},
+  marks: [
+    Plot.rectY(histogram, {
+      x1: "lo", x2: "hi", y: "count",
+      fill: d => {
+        if (d.hi <= -3) return "#dc2626";
+        if (d.hi <= -0.5) return "#fb923c";
+        if (d.hi <= 0.5 && d.lo >= -0.5) return "#a3a3a3";
+        if (d.lo >= 3) return "#16a34a";
+        if (d.lo >= 0.5) return "#86efac";
+        return "#888";
+      },
+      title: d => `${d.bin}: ${d.count} shocks`,
+    }),
+    Plot.ruleX([-3, -0.5, 0.5, 3], {stroke: "white", strokeDasharray: "2,3", strokeOpacity: 0.5}),
+    Plot.ruleX([0], {stroke: "white", strokeDasharray: "4,4"}),
+    Plot.text(histogram, {x: d => (d.lo + d.hi) / 2, y: "count", text: d => d.count || "", dy: -8, fill: "currentColor", fontSize: 10}),
+  ],
+})
+))
+}});
+
+define({id: "5f2b3ff4", inputs: ["byCategory","summary"], outputs: ["byCategoryRows"], body: (byCategory,summary) => {
+const byCategoryRows = (() => {
+  const rows = [];
+  for (const r of byCategory) {
+    const total = summary.band_order.reduce((s, k) => s + (+(r[k] || 0)), 0);
+    if (!total) continue;
+    rows.push({
+      category: r.category,
+      total,
+      bands: summary.band_order.map(k => ({
+        band: k,
+        n: +(r[k] || 0),
+        share: (+(r[k] || 0)) / total,
+        color: summary.band_colors[k],
+        label: summary.band_labels[k],
+      })),
+    });
+  }
+  rows.sort((a, b) => b.total - a.total);
+  return rows;
+})();
+return {byCategoryRows};
+}});
+
+define({id: "e4a1350c", inputs: ["summary","display","byCategoryRows"], outputs: ["legend","catbars"], body: (summary,display,byCategoryRows) => {
+const legend = document.createElement("div");
+legend.className = "band-legend";
+for (const b of summary.band_order) {
+  const span = document.createElement("span");
+  const swatch = document.createElement("i");
+  swatch.style.background = summary.band_colors[b];
+  span.append(swatch, summary.band_labels[b]);
+  legend.append(span);
+}
+display(legend);
+
+const catbars = document.createElement("div");
+catbars.className = "catbars";
+for (const row of byCategoryRows) {
+  const r = document.createElement("div");
+  r.className = "catrow";
+  const name = document.createElement("div");
+  name.className = "catname";
+  name.innerHTML = `${row.category} <span class="catn">(${row.total})</span>`;
+  const bar = document.createElement("div");
+  bar.className = "catbar";
+  for (const b of row.bands) {
+    if (b.n <= 0) continue;
+    const seg = document.createElement("div");
+    seg.className = "catseg";
+    seg.style.background = b.color;
+    seg.style.flexGrow = b.n;
+    seg.style.flexBasis = "0";
+    seg.title = `${row.category} · ${b.label}: ${b.n} (${(b.share * 100).toFixed(1)}%)`;
+    bar.append(seg);
+  }
+  r.append(name, bar);
+  catbars.append(r);
+}
+display(catbars);
+return {legend,catbars};
+}});
+
+define({id: "b19e9b31", inputs: ["view","Inputs","html","summary"], outputs: ["bandKeys","selectedBand"], body: (view,Inputs,html,summary) => {
+const bandKeys = [
+  ["shock_clearly_first", "shock_clearly_first_top10"],
+  ["shock_first_marginal", "shock_first_marginal_top10"],
+  ["simultaneous_uncertain", "simultaneous_top10"],
+  ["news_first_marginal", "news_first_marginal_top10"],
+  ["news_clearly_first", "news_clearly_first_top10"],
+  ["no_news_in_window", "no_news_top10"],
+];
+const selectedBand = view(Inputs.radio(
+  bandKeys.map(([b]) => b),
+  {
+    label: html`<strong>Show band</strong>`,
+    value: "shock_clearly_first",
+    format: b => summary.band_labels[b],
+  }
+));
+return {bandKeys,selectedBand};
+}});
+
+define({id: "4da757d6", inputs: ["bandKeys","selectedBand","exemplars"], outputs: ["exemplarKey","currentExemplars"], body: (bandKeys,selectedBand,exemplars) => {
+const exemplarKey = bandKeys.find(([b]) => b === selectedBand)[1];
+const currentExemplars = exemplars[exemplarKey] || [];
+return {exemplarKey,currentExemplars};
+}});
+
+define({id: "74a21967", inputs: ["seriesById","Plot","summary","fmtDate","fmtPctSigned","fmtDollars","fmtHours","cleanWikiComment","currentExemplars","display"], outputs: ["priceChart","renderExemplar","grid"], body: (seriesById,Plot,summary,fmtDate,fmtPctSigned,fmtDollars,fmtHours,cleanWikiComment,currentExemplars,display) => {
+const priceChart = (mid, shockT) => {
+  const series = seriesById.get(mid);
+  if (!series || !series.length) {
+    const d = document.createElement("div");
+    d.className = "muted small";
+    d.textContent = "no price series";
+    return d;
+  }
+  const t0 = new Date(shockT).getTime();
+  const winMs = 72 * 3600 * 1000;
+  const win = series.filter(r => Math.abs(+r.timestamp - t0) <= winMs);
+  if (!win.length) {
+    const d = document.createElement("div");
+    d.className = "muted small";
+    d.textContent = "no bars in ±72h window";
+    return d;
+  }
+  return Plot.plot({
+    height: 150,
+    width: 700,
+    marginLeft: 40,
+    x: {type: "utc", grid: true},
+    y: {label: "Probability", domain: [0, 1], grid: true},
+    marks: [
+      Plot.areaY(win, {x: "timestamp", y: "close", fill: "#3b82f6", fillOpacity: 0.15, curve: "step"}),
+      Plot.lineY(win, {x: "timestamp", y: "close", stroke: "#3b82f6", curve: "step"}),
+      Plot.ruleX([new Date(shockT)], {stroke: "#ef4444", strokeDasharray: "4,2"}),
+    ],
+  });
+};
+
+const renderExemplar = (d) => {
+  const colour = summary.band_colors[d.band];
+  const card = document.createElement("div");
+  card.className = "exemplar";
+  card.style.borderLeftColor = colour;
+
+  const meta = document.createElement("div");
+  meta.className = "row";
+  const badge = document.createElement("span");
+  badge.className = "badge";
+  badge.style.background = colour;
+  badge.textContent = summary.band_labels[d.band];
+  const cat = document.createElement("span");
+  cat.className = "cat";
+  cat.textContent = d.category;
+  const date = document.createElement("span");
+  date.className = "date";
+  date.textContent = fmtDate(d.shock_t);
+  meta.append(badge, cat, date);
+
+  const title = document.createElement("h3");
+  title.textContent = d.question;
+
+  const stats = document.createElement("div");
+  stats.className = "stats";
+  const statBlocks = [
+    ["Δ price", fmtPctSigned(d.dp)],
+    ["Volume", fmtDollars(d.volume)],
+    ["Δt vs Wiki", `<strong style="color:${colour}">${fmtHours(d.dt_nearest_hours)}</strong>`],
+    ["Wiki page", d.nearest_wiki_page || "—"],
+  ];
+  for (const [label, value] of statBlocks) {
+    const block = document.createElement("div");
+    block.innerHTML = `<span class="muted">${label}</span><br>${value}`;
+    stats.append(block);
+  }
+
+  card.append(meta, title, stats);
+  const cleaned = cleanWikiComment(d.nearest_comment);
+  if (cleaned) {
+    const c = document.createElement("div");
+    c.className = "comment";
+    const lbl = document.createElement("span");
+    lbl.className = "comment-label";
+    lbl.textContent = "Wikipedia edit summary:";
+    const txt = document.createElement("span");
+    txt.className = "comment-text";
+    txt.textContent = cleaned;
+    c.append(lbl, document.createTextNode(" "), txt);
+    card.append(c);
+  }
+  card.append(priceChart(d.market_id, d.shock_t));
+  return card;
+};
+
+const grid = document.createElement("div");
+grid.className = "exemplar-grid";
+for (const e of currentExemplars) grid.append(renderExemplar(e));
+display(grid);
+return {priceChart,renderExemplar,grid};
+}});
+
+define({id: "2d948d87", inputs: ["exemplars","fmtPctSigned","fmtHours","display"], outputs: ["auditList"], body: (exemplars,fmtPctSigned,fmtHours,display) => {
+const auditList = document.createElement("div");
+auditList.className = "audit-list";
+for (const e of (exemplars.filtered_spurious_top10 || [])) {
+  const row = document.createElement("div");
+  row.className = "audit-row";
+  row.innerHTML = `
+    <div class="audit-q">${e.question}</div>
+    <div class="audit-meta">
+      <span class="muted">${e.category}</span> ·
+      <strong>${fmtPctSigned(e.dp)}</strong> ·
+      <span style="color:#fb923c">${fmtHours(e.dt_nearest_hours)}</span> ·
+      filtered because <em>${e.spurious_reason}</em>
+    </div>`;
+  auditList.append(row);
+}
+display(auditList);
+return {auditList};
+}});
+
+</script>
+</head>
+<body>
+<input id="observablehq-sidebar-toggle" type="checkbox" title="Toggle sidebar">
+<label id="observablehq-sidebar-backdrop" for="observablehq-sidebar-toggle"></label>
+<nav id="observablehq-sidebar">
+  <ol>
+    <label id="observablehq-sidebar-close" for="observablehq-sidebar-toggle"></label>
+    <li class="observablehq-link observablehq-link-active"><a href="./">Polymarket: Shocks vs News</a></li>
+  </ol>
+  <ol>
+    <li class="observablehq-link observablehq-link-active"><a href="./">Dashboard</a></li>
+    <li class="observablehq-link"><a href="./methodology">Methodology</a></li>
+  </ol>
+</nav>
+<script>{const e=document.querySelector("#observablehq-sidebar"),o=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?o.checked=r==="true":o.indeterminate=!0;for(const t of document.querySelectorAll("#observablehq-sidebar summary")){const s=t.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${t.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
+<div id="observablehq-center">
+<main id="observablehq-main" class="observablehq">
+<div class="observablehq observablehq--block"><!--:18f0ac65:--></div>
+<div class="observablehq observablehq--block"><!--:7156dedc:--></div>
+<h1 id="polymarket-who-moves-first-prices-or-news" tabindex="-1"><a class="observablehq-header-anchor" href="#polymarket-who-moves-first-prices-or-news">Polymarket: who moves first, prices or news?</a></h1>
+<p>For each of <strong><observablehq-loading></observablehq-loading><!--:e1445238:--></strong> high-impact shocks on Polymarket (large probability jumps with serious money behind them) we measured the timestamp gap to the nearest substantive Wikipedia edit on the relevant article. After excluding <strong><observablehq-loading></observablehq-loading><!--:d50f800d:--></strong> novelty markets (tweet counts, etc.) and <strong><observablehq-loading></observablehq-loading><!--:c724669e:--></strong> scheduled-event markets (elections during exit polls, awards ceremonies, live floor votes, etc.) — where the price-vs-Wikipedia comparison is unreliable by construction — <strong><observablehq-loading></observablehq-loading><!--:c191b025:--></strong> remain.</p>
+<p>The median remaining shock leads Wikipedia by <strong><observablehq-loading></observablehq-loading><!--:648621d5:--></strong>.</p>
+<h2 id="how-decisive-is-the-lead" tabindex="-1"><a class="observablehq-header-anchor" href="#how-decisive-is-the-lead">How decisive is the lead?</a></h2>
+<div class="grid grid-cols-3" style="margin-top: 1rem;">
+  <div class="card decisive shock">
+    <h3>Decisive: shock first</h3>
+    <span class="big"><observablehq-loading></observablehq-loading><!--:41fbf5a7:--></span>
+    <span class="muted"><observablehq-loading></observablehq-loading><!--:f15a6b0a:--> of matched shocks</span>
+    <p>Price moved <strong>more than 3 hours</strong> before the Wikipedia article was edited. Hardest to explain by "slow Wikipedia editor."</p>
+  </div>
+  <div class="card uncertain">
+    <h3>Within ±30 min</h3>
+    <span class="big"><observablehq-loading></observablehq-loading><!--:11bfe5a9:--></span>
+    <span class="muted"><observablehq-loading></observablehq-loading><!--:ad728806:--> of matched shocks</span>
+    <p>Inside the detector's own 1-hour resolution. <strong>We cannot adjudicate</strong> these without sub-hour shock timing or finer-grained news data.</p>
+  </div>
+  <div class="card decisive news">
+    <h3>Decisive: news first</h3>
+    <span class="big"><observablehq-loading></observablehq-loading><!--:031f7b68:--></span>
+    <span class="muted"><observablehq-loading></observablehq-loading><!--:d3e1c217:--> of matched shocks</span>
+    <p>Wikipedia was edited <strong>more than 3 hours</strong> before the price moved. The cleanest "market reacted to public news" cases.</p>
+  </div>
+</div>
+<div class="grid grid-cols-3" style="margin-top: .5rem;">
+  <div class="card marginal shock">
+    <span class="band-label">Shock first, marginal (30 min – 3 h)</span>
+    <span class="big"><observablehq-loading></observablehq-loading><!--:67421132:--></span>
+    <span class="muted"><observablehq-loading></observablehq-loading><!--:6c7a0f16:--> of matched</span>
+  </div>
+  <div class="card marginal news">
+    <span class="band-label">News first, marginal (30 min – 3 h)</span>
+    <span class="big"><observablehq-loading></observablehq-loading><!--:13b9cf9d:--></span>
+    <span class="muted"><observablehq-loading></observablehq-loading><!--:8c46b3bb:--> of matched</span>
+  </div>
+  <div class="card nodata">
+    <span class="band-label">No Wikipedia edit in ±7 d</span>
+    <span class="big"><observablehq-loading></observablehq-loading><!--:9303cb94:--></span>
+    <span class="muted"><observablehq-loading></observablehq-loading><!--:b3d50e17:--> of substantive shocks</span>
+  </div>
+</div>
+<h2 id="lead-lag-distribution-and-category-mix" tabindex="-1"><a class="observablehq-header-anchor" href="#lead-lag-distribution-and-category-mix">Lead/lag distribution and category mix</a></h2>
+<div class="grid grid-cols-2" style="margin-top: 1rem;">
+<div>
+<div class="observablehq observablehq--block"><observablehq-loading></observablehq-loading><!--:9f554377:--></div>
+</div>
+<div>
+<div class="observablehq observablehq--block"><!--:5f2b3ff4:--></div>
+<div class="observablehq observablehq--block"><!--:e4a1350c:--></div>
+</div>
+</div>
+<h2 id="exemplars-top-cases-for-each-band" tabindex="-1"><a class="observablehq-header-anchor" href="#exemplars-top-cases-for-each-band">Exemplars — top cases for each band</a></h2>
+<div class="observablehq observablehq--block"><!--:b19e9b31:--></div>
+<div class="observablehq observablehq--block"><!--:4da757d6:--></div>
+<div class="observablehq observablehq--block"><!--:74a21967:--></div>
+<h2 id="audit-cases-we-filtered-out-as-scheduled-event-spurious" tabindex="-1"><a class="observablehq-header-anchor" href="#audit-cases-we-filtered-out-as-scheduled-event-spurious">Audit: cases we filtered out as scheduled-event spurious</a></h2>
+<p>These shocks were excluded from the headline counts above because the question text or Wikipedia article suggests a public-but-sub-Wikipedia information feed (exit polls, live award ceremony, live floor vote, year-end search rankings, etc.). Inspect the heuristic in the methodology.</p>
+<div class="observablehq observablehq--block"><!--:2d948d87:--></div>
+<style>
+.card { background: var(--theme-foreground-faintest); border-radius: 8px; padding: 1rem; border-left: 4px solid #888; }
+.card.decisive.shock { border-left-color: #dc2626; }
+.card.decisive.news { border-left-color: #16a34a; }
+.card.marginal.shock { border-left-color: #fb923c; }
+.card.marginal.news { border-left-color: #86efac; }
+.card.uncertain { border-left-color: #a3a3a3; }
+.card.nodata { border-left-color: #525252; }
+.card .big { font-size: 2rem; font-weight: 600; display: block; line-height: 1.1; }
+.card h3 { margin: 0 0 .25rem 0; font-size: 1rem; }
+.card .band-label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: .25rem; }
+.card p { margin: .5rem 0 0 0; font-size: .85rem; }
+.muted { color: var(--theme-foreground-muted); font-size: 0.85rem; }
+
+.band-legend { display: flex; flex-wrap: wrap; gap: .75rem; margin: .5rem 0; font-size: 0.8rem; }
+.band-legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.band-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; }
+.catbars { display: flex; flex-direction: column; gap: 0.4rem; margin: .75rem 0; }
+.catrow { display: grid; grid-template-columns: 90px 1fr; align-items: center; gap: 0.5rem; }
+.catname { font-size: 0.85rem; text-align: right; }
+.catn { color: var(--theme-foreground-muted); font-size: 0.7rem; }
+.catbar { display: flex; height: 28px; border-radius: 4px; overflow: hidden; background: var(--theme-foreground-faintest); }
+.catseg { transition: filter 0.15s ease; }
+.catseg:hover { filter: brightness(1.2); }
+
+.exemplar-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-top: 1rem; }
+.exemplar { background: var(--theme-foreground-faintest); border-radius: 8px; padding: 1rem; border-left: 4px solid #888; }
+.exemplar .row { display: flex; gap: .75rem; align-items: center; margin-bottom: .25rem; font-size: 0.85rem; }
+.exemplar .badge { color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; }
+.exemplar .cat { color: var(--theme-foreground-muted); }
+.exemplar .date { color: var(--theme-foreground-muted); margin-left: auto; font-variant-numeric: tabular-nums; }
+.exemplar h3 { margin: .25rem 0 .75rem 0; }
+.exemplar .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: .5rem; }
+.exemplar .stats .muted { font-size: 0.75rem; }
+.exemplar .comment { font-size: 0.8rem; color: var(--theme-foreground-muted); margin: .25rem 0 .5rem 0; padding: .35rem .55rem; background: rgba(255,255,255,0.03); border-radius: 4px; border-left: 2px solid var(--theme-foreground-muted); }
+.exemplar .comment .comment-label { text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.65rem; font-weight: 600; color: var(--theme-foreground-muted); }
+.exemplar .comment .comment-text { font-style: italic; color: var(--theme-foreground); }
+
+.audit-list { display: flex; flex-direction: column; gap: 0.4rem; margin-top: .5rem; }
+.audit-row { padding: .5rem .75rem; border-radius: 4px; background: var(--theme-foreground-faintest); border-left: 3px solid #fb923c; }
+.audit-q { font-size: 0.95rem; }
+.audit-meta { font-size: 0.8rem; color: var(--theme-foreground-muted); margin-top: .15rem; }
+</style></main>
+<footer id="observablehq-footer">
+<nav><a rel="next" href="./methodology"><span>Methodology</span></a></nav>
+<div>Source: Polymarket on-chain trades (Nov 2022 – Mar 2026) via vgregoire/polymarket-users; news: Wikipedia revisions (GDELT to follow).</div>
+</footer>
+</div>
+</body>
+</html>

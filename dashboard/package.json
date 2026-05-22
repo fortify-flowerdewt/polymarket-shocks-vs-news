@@ -1,0 +1,19 @@
+{
+  "name": "polymarket-shock-news",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf dist .observablehq/cache",
+    "build": "observable build",
+    "dev": "observable preview",
+    "deploy": "observable deploy"
+  },
+  "dependencies": {
+    "@observablehq/framework": "^1.13.0",
+    "d3": "^7.9.0"
+  },
+  "engines": {
+    "node": ">=20.6"
+  }
+}

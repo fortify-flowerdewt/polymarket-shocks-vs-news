@@ -1,0 +1,36 @@
+# ---- macOS ----
+.DS_Store
+
+# ---- Python ----
+__pycache__/
+*.py[oc]
+build/
+wheels/
+*.egg-info
+.venv/
+
+# ---- Node / Observable ----
+node_modules/
+dashboard/.observablehq/cache/
+
+# ---- Large raw data (regenerable) ----
+# HuggingFace dataset + derived OHLCV parquet shards (~900 MB).
+data/
+
+# ---- Caches and intermediate parquets (regenerable from the data/ sources) ----
+output/wiki_cache.json
+output/gdelt_cache.json
+output/shocks.parquet
+output/aligned_wiki.parquet
+output/news_wikipedia.parquet
+output/news_gdelt.parquet
+output/*.log
+
+# But DO keep the small dashboard-data tarball under output/dashboard/
+# (summary.json, histogram.csv, by_category.csv, exemplars.json, price_series.json).
+# Those drive the static dashboard and are small (~1.7 MB combined).
+
+# ---- Editor / IDE ----
+.idea/
+.vscode/
+.claude/
