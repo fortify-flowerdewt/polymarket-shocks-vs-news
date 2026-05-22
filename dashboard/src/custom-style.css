@@ -1,0 +1,20 @@
+@import url("observablehq:default.css");
+@import url("observablehq:theme-near-midnight.css");
+
+/* Override Observable Framework's narrow content column for a dashboard layout. */
+#observablehq-main {
+  max-width: none !important;
+}
+
+#observablehq-center {
+  max-width: 1400px;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* Headings get a bit less aggressive top margin so the dashboard feels tighter. */
+#observablehq-center h1:first-child,
+#observablehq-center > .hero { margin-top: 0.5rem; }
+
+/* Hide TOC space since we set toc:false anyway. */
+#observablehq-toc { display: none; }
