@@ -112,54 +112,63 @@ display(bandStrip);
   <div class="panel-h">Lead/lag distribution <span class="panel-sub">Δt = shock − Wikipedia edit, hours</span></div>
 
 ```js
-// Human-friendly tick labels for symlog hours: 1/24 h = "1h", 24 = "1d", 168 = "1w".
-const fmtHourTick = (h) => {
+// Human-friendly bin labels. Bins are at fixed log-spaced edges, so each
+// is rendered as an equal-width bar on a band scale with a short text label.
+const fmtEdge = (h) => {
   if (h === 0) return "0";
   const sign = h < 0 ? "−" : "+";
   const a = Math.abs(h);
   if (a < 1) return `${sign}${Math.round(a * 60)}m`;
   if (a < 24) return `${sign}${a}h`;
-  if (a < 168) return `${sign}${a / 24}d`;
-  return `${sign}${a / 168}w`;
+  if (a < 168) return `${sign}${Math.round(a / 24)}d`;
+  return `${sign}${Math.round(a / 168)}w`;
 };
-const tickValues = [-168, -72, -24, -3, -0.5, 0, 0.5, 3, 24, 72, 168];
+const histogramLabeled = histogram.map(d => ({
+  ...d,
+  label: `${fmtEdge(d.lo)} → ${fmtEdge(d.hi)}`,
+  fill:
+    d.hi <= -3 ? "#dc2626" :
+    d.hi <= -0.5 ? "#fb923c" :
+    (d.hi <= 0.5 && d.lo >= -0.5) ? "#a3a3a3" :
+    d.lo >= 3 ? "#16a34a" :
+    d.lo >= 0.5 ? "#86efac" :
+    "#888",
+}));
+const bandDomain = histogramLabeled.map(d => d.label);
 ```
 
 ```js
 display(Plot.plot({
-  height: 260,
+  height: 280,
   marginLeft: 45,
   marginRight: 10,
-  marginBottom: 40,
+  marginBottom: 60,
   x: {
-    label: "← shock first    ·    Δt (shock − Wiki edit)    ·    news first →",
-    labelAnchor: "center",
-    labelOffset: 32,
-    type: "symlog",
-    domain: [-200, 200],
-    ticks: tickValues,
-    tickFormat: fmtHourTick,
-    tickSize: 4,
+    label: null,
+    domain: bandDomain,
+    tickRotate: -35,
+    tickSize: 0,
   },
   y: {label: "shocks", grid: true, ticks: 5},
   marks: [
-    Plot.rectY(histogram, {
-      x1: "lo", x2: "hi", y: "count",
-      fill: d => {
-        if (d.hi <= -3) return "#dc2626";
-        if (d.hi <= -0.5) return "#fb923c";
-        if (d.hi <= 0.5 && d.lo >= -0.5) return "#a3a3a3";
-        if (d.lo >= 3) return "#16a34a";
-        if (d.lo >= 0.5) return "#86efac";
-        return "#888";
-      },
-      title: d => `${d.bin}: ${d.count} shocks`,
+    Plot.barY(histogramLabeled, {
+      x: "label",
+      y: "count",
+      fill: "fill",
+      inset: 2,
+      title: d => `${d.label}: ${d.count} shocks`,
     }),
-    Plot.ruleX([0], {stroke: "currentColor", strokeOpacity: 0.5}),
-    Plot.text(histogram, {x: d => (d.lo + d.hi) / 2, y: "count", text: d => d.count || "", dy: -6, fill: "currentColor", fontSize: 10}),
+    Plot.text(histogramLabeled, {
+      x: "label", y: "count", text: d => d.count || "",
+      dy: -6, fill: "currentColor", fontSize: 10,
+    }),
   ],
 }))
 ```
+
+<div class="axis-key muted small">
+  ← shock first&nbsp;&nbsp;·&nbsp;&nbsp;Δt = shock − Wiki edit&nbsp;&nbsp;·&nbsp;&nbsp;news first →
+</div>
 
   <div class="panel-foot muted">Ticks sit at the band thresholds (±30m, ±3h) and human time-units (1d, 3d, 1w). Grey centre = inside detector resolution.</div>
 </div>
@@ -522,6 +531,7 @@ display(auditList);
 .audit-q { font-size: 0.85rem; }
 .audit-meta { font-size: 0.75rem; margin-top: .1rem; }
 
+.axis-key { text-align: center; margin-top: .25rem; font-size: 0.78rem; }
 .small { font-size: 0.8rem; }
 
 @media (max-width: 900px) {
