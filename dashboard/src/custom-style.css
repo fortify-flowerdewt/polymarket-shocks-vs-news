@@ -1,7 +1,20 @@
 @import url("observablehq:default.css");
-@import url("observablehq:theme-near-midnight.css");
+@import url("observablehq:theme-air.css");
 
-/* Override Observable Framework's narrow content column for a dashboard layout. */
+/* Light-grey dashboard backdrop. */
+:root {
+  --dash-bg: #f1f3f6;
+  --dash-panel: #ffffff;
+  --dash-border: rgba(15, 23, 42, 0.08);
+  --dash-divider: rgba(15, 23, 42, 0.06);
+  --dash-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+  --dash-fg-muted: #64748b;
+}
+
+html, body, #observablehq-main {
+  background: var(--dash-bg) !important;
+}
+
 #observablehq-main {
   max-width: none !important;
 }
@@ -12,9 +25,89 @@
   padding-right: 1.5rem;
 }
 
-/* Headings get a bit less aggressive top margin so the dashboard feels tighter. */
 #observablehq-center h1:first-child,
 #observablehq-center > .hero { margin-top: 0.5rem; }
 
-/* Hide TOC space since we set toc:false anyway. */
 #observablehq-toc { display: none; }
+
+/* Sidebar tone-down to match the lighter aesthetic. */
+#observablehq-sidebar { background: #e7eaf0 !important; }
+
+/* ---------- Hero / KPI ---------- */
+.hero {
+  background: linear-gradient(135deg, rgba(59,130,246,0.06), rgba(220,38,38,0.04));
+  border: 1px solid var(--dash-border);
+}
+.hero-sub, .kpi-l { color: var(--dash-fg-muted); }
+.kpi {
+  background: var(--dash-panel);
+  border: 1px solid var(--dash-border);
+  box-shadow: var(--dash-shadow);
+}
+.kpi.kpi-accent {
+  background: rgba(59,130,246,0.08);
+  border-color: rgba(59,130,246,0.25);
+}
+
+/* ---------- Band cards ---------- */
+.bandcard {
+  background: var(--dash-panel);
+  border: 1px solid var(--dash-border);
+  box-shadow: var(--dash-shadow);
+  color: inherit;
+}
+.bandcard:hover { background: #fbfcfe; }
+.bandcard.selected {
+  background: #ffffff;
+  border-color: var(--band-color);
+  box-shadow: 0 0 0 1px var(--band-color), var(--dash-shadow);
+}
+.bandcard-share, .bandcard-l { color: var(--dash-fg-muted); }
+
+/* ---------- Panels ---------- */
+.panel {
+  background: var(--dash-panel);
+  border: 1px solid var(--dash-border);
+  box-shadow: var(--dash-shadow);
+}
+.panel-sub, .panel-foot { color: var(--dash-fg-muted); }
+.filter-pill {
+  background: rgba(15, 23, 42, 0.06);
+  color: inherit;
+}
+.filter-pill:hover { background: rgba(15, 23, 42, 0.1); }
+
+/* ---------- Category bars ---------- */
+.catbar { background: rgba(15, 23, 42, 0.04); }
+
+/* ---------- Market table ---------- */
+.markets-table { gap: 1px; }
+.mt-row {
+  background: #fafbfc;
+  border: 1px solid var(--dash-divider);
+}
+.mt-row:hover { background: #f3f5f8; }
+.mt-row.selected { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); }
+.mt-row.mt-head { background: transparent; border: none; color: var(--dash-fg-muted); }
+.mt-detail {
+  background: var(--dash-panel);
+  border: 1px solid var(--dash-border);
+}
+.md-meta { color: var(--dash-fg-muted); }
+.md-legend { color: var(--dash-fg-muted); }
+
+.ms-row { background: #fafbfc; }
+.ms-row.ms-head { background: transparent; color: var(--dash-fg-muted); border-left-color: transparent; }
+.mw-row:nth-child(odd) { background: rgba(15, 23, 42, 0.02); }
+.mw-time, .mw-cmt { color: var(--dash-fg-muted); }
+.mw-page a, .ms-row a { color: #1d4ed8; }
+
+/* Wikipedia byte-delta colours adjusted for light bg */
+/* (set inline in JS; tone down so they're still legible) */
+
+/* ---------- Audit ---------- */
+.audit-details summary { background: rgba(251,146,60,0.12); }
+.audit-row { background: var(--dash-panel); border: 1px solid var(--dash-divider); border-left: 2px solid #fb923c; }
+.audit-meta { color: var(--dash-fg-muted); }
+
+.muted { color: var(--dash-fg-muted) !important; }
