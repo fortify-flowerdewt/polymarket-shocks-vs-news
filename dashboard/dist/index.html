@@ -7,10 +7,10 @@
 <title>Polymarket — Shocks vs News | Polymarket: Shocks vs News</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
-<link rel="preload" as="style" href="./_import/custom-style.e23b4cfa.css">
+<link rel="preload" as="style" href="./_import/custom-style.b8a721e4.css">
 <link rel="preload" as="style" href="./_observablehq/stdlib/inputs.f7bf0e12.css">
 <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
-<link rel="stylesheet" type="text/css" href="./_import/custom-style.e23b4cfa.css">
+<link rel="stylesheet" type="text/css" href="./_import/custom-style.b8a721e4.css">
 <link rel="stylesheet" type="text/css" href="./_observablehq/stdlib/inputs.f7bf0e12.css">
 <link rel="modulepreload" href="./_observablehq/client.5690ab01.js">
 <link rel="modulepreload" href="./_observablehq/runtime.607a8173.js">
@@ -77,7 +77,7 @@ const marketsDetail = await FileAttachment("./data/markets_detail.json").json();
 return {summary,histogram,byCategory,exemplars,marketsIndex,marketsDetail};
 }});
 
-define({id: "41b4f946", inputs: ["d3"], outputs: ["fmtCount","fmtPct","fmtPctSigned","fmtBigUsd","fmtDate","fmtPriceDate","fmtHours","cleanWikiComment"], body: (d3) => {
+define({id: "2c9c0534", inputs: ["d3"], outputs: ["fmtCount","fmtPct","fmtPctSigned","fmtBigUsd","fmtDate","fmtPriceDate","fmtHours","parseTs","cleanWikiComment"], body: (d3) => {
 const fmtCount = (n) => d3.format(",")(n);
 const fmtPct = (p) => d3.format(".0%")(p);
 const fmtPctSigned = (p) => `${p > 0 ? "+" : ""}${(p * 100).toFixed(1)} pp`;
@@ -92,6 +92,17 @@ const fmtHours = (h) => {
   if (a < 1) return `${sign}${(a * 60).toFixed(0)} min`;
   if (a < 48) return `${sign}${a.toFixed(2)} h`;
   return `${sign}${(a / 24).toFixed(1)} d`;
+};
+
+// Parse our parquet-emitted timestamps robustly. Polars'.isoformat() on
+// shock_t gives "YYYY-MM-DD HH:MM:SS+00:00" (space-separated), which Safari
+// refuses to parse with `new Date(...)`. Series timestamps use "T". Normalize.
+const parseTs = (s) => {
+  if (s == null) return null;
+  if (s instanceof Date) return s;
+  const norm = typeof s === "string" && s.includes(" ") && !s.includes("T")
+    ? s.replace(" ", "T") : s;
+  return new Date(norm);
 };
 
 const cleanWikiComment = (raw) => {
@@ -111,7 +122,7 @@ const cleanWikiComment = (raw) => {
   if (s.length > 140) s = s.slice(0, 137) + "…";
   return s;
 };
-return {fmtCount,fmtPct,fmtPctSigned,fmtBigUsd,fmtDate,fmtPriceDate,fmtHours,cleanWikiComment};
+return {fmtCount,fmtPct,fmtPctSigned,fmtBigUsd,fmtDate,fmtPriceDate,fmtHours,parseTs,cleanWikiComment};
 }});
 
 define({id: "e1445238", mode: "inline", inputs: ["fmtCount","summary","display"], body: async (fmtCount,summary,display) => {
@@ -304,7 +315,7 @@ const currentExemplars = exemplars[bandToKey[exemplarBand]] || [];
 return {bandToKey,currentExemplars};
 }});
 
-define({id: "3129b198", inputs: ["marketsDetail","Plot","summary","fmtDate","fmtPctSigned","fmtBigUsd","fmtHours","cleanWikiComment","currentExemplars","display"], outputs: ["exemplarPriceChart","renderExemplar","exemplarGrid"], body: (marketsDetail,Plot,summary,fmtDate,fmtPctSigned,fmtBigUsd,fmtHours,cleanWikiComment,currentExemplars,display) => {
+define({id: "bebb770f", inputs: ["marketsDetail","parseTs","Plot","summary","fmtDate","fmtPctSigned","fmtBigUsd","fmtHours","cleanWikiComment","currentExemplars","display"], outputs: ["exemplarPriceChart","renderExemplar","exemplarGrid"], body: (marketsDetail,parseTs,Plot,summary,fmtDate,fmtPctSigned,fmtBigUsd,fmtHours,cleanWikiComment,currentExemplars,display) => {
 // Per-exemplar price chart: ±72h window around the shock, with the shock
 // (band-coloured dashed rule) and any Wikipedia revisions in the window
 // (yellow ticks) overlaid on the price step-line.
@@ -312,36 +323,43 @@ const exemplarPriceChart = (mid, shockT) => {
   const det = marketsDetail[String(mid)];
   if (!det || !det.series || !det.series.length) {
     const d = document.createElement("div");
-    d.className = "muted small";
-    d.textContent = "no price series available";
+    d.className = "muted small ex-empty";
+    d.textContent = `no price series for market ${mid}`;
     return d;
   }
-  const t0 = new Date(shockT).getTime();
+  const shockDate = parseTs(shockT);
+  const t0 = shockDate ? +shockDate : NaN;
+  if (isNaN(t0)) {
+    const d = document.createElement("div");
+    d.className = "muted small ex-empty";
+    d.textContent = `could not parse shock_t = ${shockT}`;
+    return d;
+  }
   const winMs = 72 * 3600 * 1000;
   const series = det.series
-    .map(([ts, close, vol]) => ({timestamp: new Date(ts), close: +close, volume: +vol}))
-    .filter(r => Math.abs(+r.timestamp - t0) <= winMs);
+    .map(([ts, close, vol]) => ({timestamp: parseTs(ts), close: +close, volume: +vol}))
+    .filter(r => r.timestamp && Math.abs(+r.timestamp - t0) <= winMs);
   if (!series.length) {
     const d = document.createElement("div");
-    d.className = "muted small";
-    d.textContent = "no bars in ±72h window";
+    d.className = "muted small ex-empty";
+    d.textContent = `no bars in ±72 h of ${shockDate.toUTCString()}`;
     return d;
   }
   const wikiIn = (det.wiki || [])
-    .map(w => ({timestamp: new Date(w.t)}))
-    .filter(w => Math.abs(+w.timestamp - t0) <= winMs);
+    .map(w => ({timestamp: parseTs(w.t)}))
+    .filter(w => w.timestamp && Math.abs(+w.timestamp - t0) <= winMs);
   return Plot.plot({
-    height: 170,
-    width: 720,
-    marginLeft: 40,
-    marginBottom: 25,
+    height: 200,
+    width: 1100,
+    marginLeft: 45,
+    marginBottom: 28,
     x: {type: "utc", grid: true},
     y: {label: "Probability", domain: [0, 1], grid: true},
     marks: [
-      Plot.areaY(series, {x: "timestamp", y: "close", fill: "#3b82f6", fillOpacity: 0.12, curve: "step"}),
-      Plot.lineY(series, {x: "timestamp", y: "close", stroke: "#1d4ed8", strokeWidth: 1.4, curve: "step"}),
-      Plot.tickX(wikiIn, {x: "timestamp", stroke: "#d97706", strokeOpacity: 0.7, strokeWidth: 1.2, y: 0.02}),
-      Plot.ruleX([new Date(shockT)], {stroke: "#dc2626", strokeDasharray: "4,2", strokeWidth: 1.4}),
+      Plot.areaY(series, {x: "timestamp", y: "close", fill: "#3b82f6", fillOpacity: 0.15, curve: "step"}),
+      Plot.lineY(series, {x: "timestamp", y: "close", stroke: "#1d4ed8", strokeWidth: 1.6, curve: "step"}),
+      Plot.tickX(wikiIn, {x: "timestamp", stroke: "#d97706", strokeOpacity: 0.85, strokeWidth: 1.6, y: 0.03}),
+      Plot.ruleX([shockDate], {stroke: "#dc2626", strokeDasharray: "5,3", strokeWidth: 1.6}),
     ],
   });
 };
@@ -444,7 +462,7 @@ const setSelected = (id) => { selectedMarketId.value = id; };
 return {selectedMarketId,setSelected};
 }});
 
-define({id: "a859f756", inputs: ["summary","marketsDetail","fmtPriceDate","Plot","fmtDate","fmtPctSigned","fmtBigUsd","fmtHours","cleanWikiComment","browseFiltered","selectedMarketId","setSelected","display","html"], outputs: ["bandChips","renderMarketDetail","tableHost","renderTable"], body: (summary,marketsDetail,fmtPriceDate,Plot,fmtDate,fmtPctSigned,fmtBigUsd,fmtHours,cleanWikiComment,browseFiltered,selectedMarketId,setSelected,display,html) => {
+define({id: "eb80e746", inputs: ["summary","marketsDetail","fmtPriceDate","parseTs","Plot","fmtDate","fmtPctSigned","fmtBigUsd","fmtHours","cleanWikiComment","browseFiltered","selectedMarketId","setSelected","display","html"], outputs: ["bandChips","renderMarketDetail","tableHost","renderTable"], body: (summary,marketsDetail,fmtPriceDate,parseTs,Plot,fmtDate,fmtPctSigned,fmtBigUsd,fmtHours,cleanWikiComment,browseFiltered,selectedMarketId,setSelected,display,html) => {
 const bandChips = (counts) => {
   const span = document.createElement("span"); span.className = "band-chips";
   for (const b of summary.band_order) {
@@ -470,9 +488,9 @@ const renderMarketDetail = (m) => {
   root.append(head);
 
   if (det.series.length) {
-    const series = det.series.map(([t, c, v]) => ({timestamp: new Date(t), close: +c, volume: +v}));
-    const shockTimes = det.shocks.map(s => ({timestamp: new Date(s.t), band: s.band || "no_news_in_window"}));
-    const wikiTimes = det.wiki.slice(0, 50).map(w => ({timestamp: new Date(w.t)}));
+    const series = det.series.map(([t, c, v]) => ({timestamp: parseTs(t), close: +c, volume: +v}));
+    const shockTimes = det.shocks.map(s => ({timestamp: parseTs(s.t), band: s.band || "no_news_in_window"}));
+    const wikiTimes = det.wiki.slice(0, 50).map(w => ({timestamp: parseTs(w.t)}));
     root.append(Plot.plot({
       height: 220, width: 880, marginLeft: 50,
       x: {type: "utc", grid: true}, y: {label: "Probability", domain: [0, 1], grid: true},
@@ -620,29 +638,20 @@ return {auditList};
 </script>
 </head>
 <body>
-<input id="observablehq-sidebar-toggle" type="checkbox" title="Toggle sidebar">
-<label id="observablehq-sidebar-backdrop" for="observablehq-sidebar-toggle"></label>
-<nav id="observablehq-sidebar">
-  <ol>
-    <label id="observablehq-sidebar-close" for="observablehq-sidebar-toggle"></label>
-    <li class="observablehq-link observablehq-link-active"><a href="./">Polymarket: Shocks vs News</a></li>
-  </ol>
-  <ol>
-    <li class="observablehq-link observablehq-link-active"><a href="./">Dashboard</a></li>
-    <li class="observablehq-link"><a href="./methodology">Methodology</a></li>
-  </ol>
-</nav>
-<script>{const e=document.querySelector("#observablehq-sidebar"),o=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?o.checked=r==="true":o.indeterminate=!0;for(const t of document.querySelectorAll("#observablehq-sidebar summary")){const s=t.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${t.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
 <div id="observablehq-center">
 <main id="observablehq-main" class="observablehq">
 <div class="observablehq observablehq--block"><!--:0c4488fd:--></div>
-<div class="observablehq observablehq--block"><!--:41b4f946:--></div>
+<div class="observablehq observablehq--block"><!--:2c9c0534:--></div>
 <div class="hero">
   <div class="hero-title">
     <div class="kicker">Polymarket</div>
     <h1>Shocks vs Wikipedia news</h1>
     <div class="hero-sub">Every large probability move on Polymarket, timed against the nearest Wikipedia edit on the relevant article. Negative Δt = price moved first.</div>
   </div>
+  <button class="meth-trigger" onclick="document.getElementById('methodology-modal').showModal()">
+    <span class="meth-icon">📖</span>
+    <span>Methodology</span>
+  </button>
   <div class="kpi-strip">
     <div class="kpi">
       <span class="kpi-n"><observablehq-loading></observablehq-loading><!--:e1445238:--></span>
@@ -688,7 +697,7 @@ return {auditList};
   <div class="panel-h panel-h-big">Top cases per band <span class="panel-sub">cleanest 10 examples for each lead/lag bucket — each card shows the ±72 h price window with the shock marked</span></div>
 <div class="observablehq observablehq--block"><!--:9d5aa5da:--></div>
 <div class="observablehq observablehq--block"><!--:96d3d948:--></div>
-<div class="observablehq observablehq--block"><!--:3129b198:--></div>
+<div class="observablehq observablehq--block"><!--:bebb770f:--></div>
 </div>
 <div class="panel panel-main">
   <div class="panel-h panel-h-big">Browse all markets
@@ -698,18 +707,60 @@ return {auditList};
 <div class="observablehq observablehq--block"><!--:a10ae520:--></div>
 <div class="observablehq observablehq--block"><!--:60b94003:--></div>
 <div class="observablehq observablehq--block"><!--:d5f74fb8:--></div>
-<div class="observablehq observablehq--block"><!--:a859f756:--></div>
+<div class="observablehq observablehq--block"><!--:eb80e746:--></div>
 <div class="observablehq observablehq--block"><!--:31490705:--></div>
 </div>
 <details class="audit-details">
 <summary>Audit: top 10 cases excluded by the scheduled-event filter</summary>
 <div class="observablehq observablehq--block"><!--:cd8cb89c:--></div>
 </details>
+<dialog id="methodology-modal" class="meth-modal">
+  <div class="meth-modal-head">
+    <strong>Methodology</strong>
+    <button class="meth-close" onclick="document.getElementById('methodology-modal').close()" aria-label="Close">×</button>
+  </div>
+  <iframe src="./methodology" class="meth-iframe" title="Methodology"></iframe>
+</dialog>
 <style>
 /* Layout only. All colors and backgrounds live in custom-style.css so the
    theme can be swapped (light / dark) by editing one file. */
-.hero { display: flex; flex-direction: column; gap: 1rem; padding: 1.25rem 1.5rem;
-        border-radius: 10px; margin-bottom: 1.25rem; }
+.hero { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto;
+        gap: 1rem 1.5rem; padding: 1.25rem 1.5rem; border-radius: 10px; margin-bottom: 1.25rem;
+        align-items: start; }
+.hero-title { grid-column: 1; grid-row: 1; }
+.meth-trigger {
+  grid-column: 2; grid-row: 1; align-self: start;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.meth-icon { font-size: 1rem; }
+.kpi-strip { grid-column: 1 / -1; grid-row: 2; }
+.meth-modal {
+  border: none;
+  border-radius: 12px;
+  padding: 0;
+  width: min(1100px, 92vw);
+  height: min(85vh, 900px);
+  max-width: 92vw;
+  max-height: 90vh;
+  overflow: hidden;
+}
+.meth-modal::backdrop { background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px); }
+.meth-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+}
+.meth-close {
+  background: transparent; border: none; cursor: pointer;
+  font-size: 1.5rem; line-height: 1; padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+}
+.meth-iframe { width: 100%; height: calc(100% - 48px); border: 0; display: block; }
 .hero .kicker { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
         margin-bottom: 0.25rem; }
 .hero h1 { margin: 0; font-size: 1.85rem; line-height: 1.1; }
@@ -812,7 +863,6 @@ return {auditList};
 }
 </style></main>
 <footer id="observablehq-footer">
-<nav><a rel="next" href="./methodology"><span>Methodology</span></a></nav>
 <div>Source: Polymarket on-chain trades (Nov 2022 – Mar 2026) via vgregoire/polymarket-users; news: Wikipedia revisions (GDELT to follow).</div>
 </footer>
 </div>

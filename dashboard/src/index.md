@@ -29,6 +29,17 @@ const fmtHours = (h) => {
   return `${sign}${(a / 24).toFixed(1)} d`;
 };
 
+// Parse our parquet-emitted timestamps robustly. Polars'.isoformat() on
+// shock_t gives "YYYY-MM-DD HH:MM:SS+00:00" (space-separated), which Safari
+// refuses to parse with `new Date(...)`. Series timestamps use "T". Normalize.
+const parseTs = (s) => {
+  if (s == null) return null;
+  if (s instanceof Date) return s;
+  const norm = typeof s === "string" && s.includes(" ") && !s.includes("T")
+    ? s.replace(" ", "T") : s;
+  return new Date(norm);
+};
+
 const cleanWikiComment = (raw) => {
   if (!raw) return null;
   let s = String(raw).trim();
@@ -54,6 +65,10 @@ const cleanWikiComment = (raw) => {
     <h1>Shocks vs Wikipedia news</h1>
     <div class="hero-sub">Every large probability move on Polymarket, timed against the nearest Wikipedia edit on the relevant article. Negative Δt = price moved first.</div>
   </div>
+  <button class="meth-trigger" onclick="document.getElementById('methodology-modal').showModal()">
+    <span class="meth-icon">📖</span>
+    <span>Methodology</span>
+  </button>
   <div class="kpi-strip">
     <div class="kpi">
       <span class="kpi-n">${fmtCount(summary.n_shocks_in_shortlist_all)}</span>
@@ -261,36 +276,43 @@ const exemplarPriceChart = (mid, shockT) => {
   const det = marketsDetail[String(mid)];
   if (!det || !det.series || !det.series.length) {
     const d = document.createElement("div");
-    d.className = "muted small";
-    d.textContent = "no price series available";
+    d.className = "muted small ex-empty";
+    d.textContent = `no price series for market ${mid}`;
     return d;
   }
-  const t0 = new Date(shockT).getTime();
+  const shockDate = parseTs(shockT);
+  const t0 = shockDate ? +shockDate : NaN;
+  if (isNaN(t0)) {
+    const d = document.createElement("div");
+    d.className = "muted small ex-empty";
+    d.textContent = `could not parse shock_t = ${shockT}`;
+    return d;
+  }
   const winMs = 72 * 3600 * 1000;
   const series = det.series
-    .map(([ts, close, vol]) => ({timestamp: new Date(ts), close: +close, volume: +vol}))
-    .filter(r => Math.abs(+r.timestamp - t0) <= winMs);
+    .map(([ts, close, vol]) => ({timestamp: parseTs(ts), close: +close, volume: +vol}))
+    .filter(r => r.timestamp && Math.abs(+r.timestamp - t0) <= winMs);
   if (!series.length) {
     const d = document.createElement("div");
-    d.className = "muted small";
-    d.textContent = "no bars in ±72h window";
+    d.className = "muted small ex-empty";
+    d.textContent = `no bars in ±72 h of ${shockDate.toUTCString()}`;
     return d;
   }
   const wikiIn = (det.wiki || [])
-    .map(w => ({timestamp: new Date(w.t)}))
-    .filter(w => Math.abs(+w.timestamp - t0) <= winMs);
+    .map(w => ({timestamp: parseTs(w.t)}))
+    .filter(w => w.timestamp && Math.abs(+w.timestamp - t0) <= winMs);
   return Plot.plot({
-    height: 170,
-    width: 720,
-    marginLeft: 40,
-    marginBottom: 25,
+    height: 200,
+    width: 1100,
+    marginLeft: 45,
+    marginBottom: 28,
     x: {type: "utc", grid: true},
     y: {label: "Probability", domain: [0, 1], grid: true},
     marks: [
-      Plot.areaY(series, {x: "timestamp", y: "close", fill: "#3b82f6", fillOpacity: 0.12, curve: "step"}),
-      Plot.lineY(series, {x: "timestamp", y: "close", stroke: "#1d4ed8", strokeWidth: 1.4, curve: "step"}),
-      Plot.tickX(wikiIn, {x: "timestamp", stroke: "#d97706", strokeOpacity: 0.7, strokeWidth: 1.2, y: 0.02}),
-      Plot.ruleX([new Date(shockT)], {stroke: "#dc2626", strokeDasharray: "4,2", strokeWidth: 1.4}),
+      Plot.areaY(series, {x: "timestamp", y: "close", fill: "#3b82f6", fillOpacity: 0.15, curve: "step"}),
+      Plot.lineY(series, {x: "timestamp", y: "close", stroke: "#1d4ed8", strokeWidth: 1.6, curve: "step"}),
+      Plot.tickX(wikiIn, {x: "timestamp", stroke: "#d97706", strokeOpacity: 0.85, strokeWidth: 1.6, y: 0.03}),
+      Plot.ruleX([shockDate], {stroke: "#dc2626", strokeDasharray: "5,3", strokeWidth: 1.6}),
     ],
   });
 };
@@ -415,9 +437,9 @@ const renderMarketDetail = (m) => {
   root.append(head);
 
   if (det.series.length) {
-    const series = det.series.map(([t, c, v]) => ({timestamp: new Date(t), close: +c, volume: +v}));
-    const shockTimes = det.shocks.map(s => ({timestamp: new Date(s.t), band: s.band || "no_news_in_window"}));
-    const wikiTimes = det.wiki.slice(0, 50).map(w => ({timestamp: new Date(w.t)}));
+    const series = det.series.map(([t, c, v]) => ({timestamp: parseTs(t), close: +c, volume: +v}));
+    const shockTimes = det.shocks.map(s => ({timestamp: parseTs(s.t), band: s.band || "no_news_in_window"}));
+    const wikiTimes = det.wiki.slice(0, 50).map(w => ({timestamp: parseTs(w.t)}));
     root.append(Plot.plot({
       height: 220, width: 880, marginLeft: 50,
       x: {type: "utc", grid: true}, y: {label: "Probability", domain: [0, 1], grid: true},
@@ -567,11 +589,54 @@ display(auditList);
 
 </details>
 
+<dialog id="methodology-modal" class="meth-modal">
+  <div class="meth-modal-head">
+    <strong>Methodology</strong>
+    <button class="meth-close" onclick="document.getElementById('methodology-modal').close()" aria-label="Close">×</button>
+  </div>
+  <iframe src="./methodology" class="meth-iframe" title="Methodology"></iframe>
+</dialog>
+
 <style>
 /* Layout only. All colors and backgrounds live in custom-style.css so the
    theme can be swapped (light / dark) by editing one file. */
-.hero { display: flex; flex-direction: column; gap: 1rem; padding: 1.25rem 1.5rem;
-        border-radius: 10px; margin-bottom: 1.25rem; }
+.hero { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto;
+        gap: 1rem 1.5rem; padding: 1.25rem 1.5rem; border-radius: 10px; margin-bottom: 1.25rem;
+        align-items: start; }
+.hero-title { grid-column: 1; grid-row: 1; }
+.meth-trigger {
+  grid-column: 2; grid-row: 1; align-self: start;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.meth-icon { font-size: 1rem; }
+.kpi-strip { grid-column: 1 / -1; grid-row: 2; }
+.meth-modal {
+  border: none;
+  border-radius: 12px;
+  padding: 0;
+  width: min(1100px, 92vw);
+  height: min(85vh, 900px);
+  max-width: 92vw;
+  max-height: 90vh;
+  overflow: hidden;
+}
+.meth-modal::backdrop { background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px); }
+.meth-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+}
+.meth-close {
+  background: transparent; border: none; cursor: pointer;
+  font-size: 1.5rem; line-height: 1; padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+}
+.meth-iframe { width: 100%; height: calc(100% - 48px); border: 0; display: block; }
 .hero .kicker { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
         margin-bottom: 0.25rem; }
 .hero h1 { margin: 0; font-size: 1.85rem; line-height: 1.1; }
