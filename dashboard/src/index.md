@@ -272,7 +272,7 @@ const currentExemplars = exemplars[bandToKey[exemplarBand]] || [];
 // Per-exemplar price chart: ±72h window around the shock, with the shock
 // (band-coloured dashed rule) and any Wikipedia revisions in the window
 // (yellow ticks) overlaid on the price step-line.
-const exemplarPriceChart = (mid, shockT) => {
+const exemplarPriceChart = (mid, shockT, containerWidth = 1080) => {
   const det = marketsDetail[String(mid)];
   if (!det || !det.series || !det.series.length) {
     const d = document.createElement("div");
@@ -290,8 +290,9 @@ const exemplarPriceChart = (mid, shockT) => {
   }
   const winMs = 72 * 3600 * 1000;
   const series = det.series
-    .map(([ts, close, vol]) => ({timestamp: parseTs(ts), close: +close, volume: +vol}))
-    .filter(r => r.timestamp && Math.abs(+r.timestamp - t0) <= winMs);
+    .map(row => ({timestamp: parseTs(row[0]), close: +row[1], volume: +row[2]}))
+    .filter(r => r.timestamp instanceof Date && !isNaN(+r.timestamp)
+              && Math.abs(+r.timestamp - t0) <= winMs);
   if (!series.length) {
     const d = document.createElement("div");
     d.className = "muted small ex-empty";
@@ -300,19 +301,26 @@ const exemplarPriceChart = (mid, shockT) => {
   }
   const wikiIn = (det.wiki || [])
     .map(w => ({timestamp: parseTs(w.t)}))
-    .filter(w => w.timestamp && Math.abs(+w.timestamp - t0) <= winMs);
+    .filter(w => w.timestamp instanceof Date && !isNaN(+w.timestamp)
+              && Math.abs(+w.timestamp - t0) <= winMs);
   return Plot.plot({
-    height: 200,
-    width: 1100,
-    marginLeft: 45,
-    marginBottom: 28,
+    height: 220,
+    width: containerWidth,
+    marginLeft: 50,
+    marginRight: 20,
+    marginBottom: 30,
+    marginTop: 20,
     x: {type: "utc", grid: true},
-    y: {label: "Probability", domain: [0, 1], grid: true},
+    y: {label: "Probability", domain: [0, 1], grid: true, ticks: [0, 0.25, 0.5, 0.75, 1]},
     marks: [
-      Plot.areaY(series, {x: "timestamp", y: "close", fill: "#3b82f6", fillOpacity: 0.15, curve: "step"}),
-      Plot.lineY(series, {x: "timestamp", y: "close", stroke: "#1d4ed8", strokeWidth: 1.6, curve: "step"}),
-      Plot.tickX(wikiIn, {x: "timestamp", stroke: "#d97706", strokeOpacity: 0.85, strokeWidth: 1.6, y: 0.03}),
-      Plot.ruleX([shockDate], {stroke: "#dc2626", strokeDasharray: "5,3", strokeWidth: 1.6}),
+      Plot.areaY(series, {x: "timestamp", y: "close", fill: "#60a5fa", fillOpacity: 0.35, curve: "step-after"}),
+      Plot.lineY(series, {x: "timestamp", y: "close", stroke: "#1e40af", strokeWidth: 2, curve: "step-after"}),
+      Plot.dot(series, {x: "timestamp", y: "close", r: 2.5, fill: "#1e40af"}),
+      ...(wikiIn.length ? [
+        Plot.ruleX(wikiIn, {x: "timestamp", stroke: "#d97706", strokeOpacity: 0.55, strokeWidth: 1.2}),
+        Plot.dot(wikiIn, {x: "timestamp", y: 0.04, r: 3, fill: "#d97706", stroke: "white", strokeWidth: 1}),
+      ] : []),
+      Plot.ruleX([shockDate], {stroke: "#dc2626", strokeDasharray: "6,4", strokeWidth: 2}),
     ],
   });
 };
