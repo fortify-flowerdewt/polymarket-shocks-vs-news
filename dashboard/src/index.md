@@ -112,12 +112,36 @@ display(bandStrip);
   <div class="panel-h">Lead/lag distribution <span class="panel-sub">Δt = shock − Wikipedia edit, hours</span></div>
 
 ```js
+// Human-friendly tick labels for symlog hours: 1/24 h = "1h", 24 = "1d", 168 = "1w".
+const fmtHourTick = (h) => {
+  if (h === 0) return "0";
+  const sign = h < 0 ? "−" : "+";
+  const a = Math.abs(h);
+  if (a < 1) return `${sign}${Math.round(a * 60)}m`;
+  if (a < 24) return `${sign}${a}h`;
+  if (a < 168) return `${sign}${a / 24}d`;
+  return `${sign}${a / 168}w`;
+};
+const tickValues = [-168, -72, -24, -3, -0.5, 0, 0.5, 3, 24, 72, 168];
+```
+
+```js
 display(Plot.plot({
-  height: 240,
-  marginLeft: 50,
+  height: 260,
+  marginLeft: 45,
   marginRight: 10,
-  x: {label: null, type: "symlog", domain: [-200, 200], grid: true},
-  y: {label: "count", grid: true},
+  marginBottom: 40,
+  x: {
+    label: "← shock first    ·    Δt (shock − Wiki edit)    ·    news first →",
+    labelAnchor: "center",
+    labelOffset: 32,
+    type: "symlog",
+    domain: [-200, 200],
+    tickValues,
+    tickFormat: fmtHourTick,
+    tickSize: 4,
+  },
+  y: {label: "shocks", grid: true, ticks: 5},
   marks: [
     Plot.rectY(histogram, {
       x1: "lo", x2: "hi", y: "count",
@@ -131,14 +155,13 @@ display(Plot.plot({
       },
       title: d => `${d.bin}: ${d.count} shocks`,
     }),
-    Plot.ruleX([-3, -0.5, 0.5, 3], {stroke: "white", strokeDasharray: "2,3", strokeOpacity: 0.4}),
-    Plot.ruleX([0], {stroke: "white", strokeDasharray: "4,4"}),
-    Plot.text(histogram, {x: d => (d.lo + d.hi) / 2, y: "count", text: d => d.count || "", dy: -8, fill: "currentColor", fontSize: 10}),
+    Plot.ruleX([0], {stroke: "currentColor", strokeOpacity: 0.5}),
+    Plot.text(histogram, {x: d => (d.lo + d.hi) / 2, y: "count", text: d => d.count || "", dy: -6, fill: "currentColor", fontSize: 10}),
   ],
 }))
 ```
 
-  <div class="panel-foot muted">Dashed lines mark band thresholds (±0.5 h, ±3 h). Grey centre = inside detector resolution.</div>
+  <div class="panel-foot muted">Ticks sit at the band thresholds (±30m, ±3h) and human time-units (1d, 3d, 1w). Grey centre = inside detector resolution.</div>
 </div>
 
 <div class="panel">
