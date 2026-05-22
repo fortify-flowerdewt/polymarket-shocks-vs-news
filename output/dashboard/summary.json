@@ -4,26 +4,26 @@
   "n_excluded_novelty": 327,
   "n_excluded_spurious": 278,
   "classification_counts": {
-    "no_news_in_window": 78,
     "simultaneous": 18,
-    "shock_before_news": 271,
-    "news_before_shock": 182
+    "no_news_in_window": 78,
+    "news_before_shock": 182,
+    "shock_before_news": 271
   },
   "band_counts": {
     "news_first_marginal": 29,
+    "news_clearly_first": 103,
     "shock_first_marginal": 62,
-    "no_news_in_window": 78,
-    "shock_clearly_first": 132,
     "simultaneous_uncertain": 145,
-    "news_clearly_first": 103
+    "shock_clearly_first": 132,
+    "no_news_in_window": 78
   },
   "band_counts_spurious": {
-    "simultaneous_uncertain": 98,
     "shock_clearly_first": 50,
+    "news_clearly_first": 22,
     "news_first_marginal": 28,
     "no_news_in_window": 13,
-    "shock_first_marginal": 67,
-    "news_clearly_first": 22
+    "simultaneous_uncertain": 98,
+    "shock_first_marginal": 67
   },
   "band_order": [
     "shock_clearly_first",

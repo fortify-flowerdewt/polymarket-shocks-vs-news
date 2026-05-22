@@ -15,6 +15,9 @@ const seriesById = new Map(
     rows.map(r => ({timestamp: new Date(r.timestamp), close: +r.close})),
   ])
 );
+const marketsIndex = await FileAttachment("data/markets_index.json").json();
+// Heavy bundle — loaded once, cached by the browser.
+const marketsDetail = await FileAttachment("data/markets_detail.json").json();
 ```
 
 ```js
@@ -353,6 +356,248 @@ for (const e of (exemplars.filtered_spurious_top10 || [])) {
 display(auditList);
 ```
 
+## Browse all markets
+
+Search across every market with a substantive shock. Click a row to expand its full price history, all detected shocks, and the Wikipedia edits around them. Use the filters to focus on a band, a category, or the markets we excluded as spurious.
+
+```js
+const browseSearch = view(Inputs.text({
+  label: "Search question text",
+  placeholder: "Type a name, topic, country…",
+  submit: false,
+}));
+```
+
+```js
+const browseCategoryOptions = ["(all)", ...Array.from(new Set(marketsIndex.map(m => m.cat))).sort()];
+const browseCategory = view(Inputs.select(browseCategoryOptions, {label: "Category", value: "(all)"}));
+const browseBand = view(Inputs.select(
+  ["(all)", ...summary.band_order],
+  {label: "Has at least one shock in band", value: "(all)",
+   format: b => b === "(all)" ? "(all)" : summary.band_labels[b]}
+));
+const includeFiltered = view(Inputs.toggle({label: "Include filtered (novelty / scheduled-event)", value: false}));
+const browseSort = view(Inputs.select(
+  ["shock_vol_total", "max_abs_dp", "n_shocks", "start"],
+  {label: "Sort by", value: "shock_vol_total",
+   format: s => ({shock_vol_total: "Total shock volume", max_abs_dp: "Biggest |Δp|",
+                  n_shocks: "Number of shocks", start: "Market opened (newest)"}[s])}
+));
+```
+
+```js
+const browseFiltered = (() => {
+  const q = (browseSearch || "").toLowerCase().trim();
+  let rows = marketsIndex.filter(m =>
+    (!q || (m.q || "").toLowerCase().includes(q))
+    && (browseCategory === "(all)" || m.cat === browseCategory)
+    && (browseBand === "(all)" || (m.bands && (m.bands[browseBand] || 0) > 0))
+    && (includeFiltered || (!m.is_novelty && !m.is_spurious))
+  );
+  if (browseSort === "start") {
+    rows.sort((a, b) => (b.start || "").localeCompare(a.start || ""));
+  } else {
+    rows.sort((a, b) => (b[browseSort] || 0) - (a[browseSort] || 0));
+  }
+  return rows;
+})();
+```
+
+```js
+display(html`<div class="browse-summary muted">${browseFiltered.length.toLocaleString()} markets match · click a row for the deep-dive</div>`);
+```
+
+```js
+const selectedMarketId = Mutable(null);
+const setSelected = (id) => { selectedMarketId.value = id; };
+```
+
+```js
+const fmtPriceDate = (s) => s ? new Date(s).toISOString().slice(0, 10) : "—";
+const fmtBigUsd = (v) => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${(v/1e3).toFixed(0)}k` : `$${(v||0).toFixed(0)}`;
+
+const bandChips = (counts) => {
+  const span = document.createElement("span");
+  span.className = "band-chips";
+  for (const b of summary.band_order) {
+    const n = counts[b] || 0;
+    if (n === 0) continue;
+    const chip = document.createElement("span");
+    chip.className = "band-chip";
+    chip.style.background = summary.band_colors[b];
+    chip.textContent = n;
+    chip.title = `${summary.band_labels[b]}: ${n}`;
+    span.append(chip);
+  }
+  return span;
+};
+
+const tableHost = document.createElement("div");
+tableHost.className = "markets-table";
+
+const renderTable = () => {
+  tableHost.replaceChildren();
+  const head = document.createElement("div");
+  head.className = "mt-row mt-head";
+  for (const h of ["", "Market", "Category", "Bands", "Shocks", "Max |Δp|", "Shock vol", "Opened"]) {
+    const c = document.createElement("div"); c.textContent = h; head.append(c);
+  }
+  tableHost.append(head);
+
+  // Cap the visible list to keep DOM cost reasonable; user can refine search.
+  const cap = 250;
+  for (const m of browseFiltered.slice(0, cap)) {
+    const r = document.createElement("div");
+    r.className = "mt-row";
+    if (m.id === selectedMarketId) r.classList.add("selected");
+    if (m.is_novelty || m.is_spurious) r.classList.add("filtered-out");
+    r.onclick = () => setSelected(m.id === selectedMarketId ? null : m.id);
+
+    const expand = document.createElement("div"); expand.textContent = m.id === selectedMarketId ? "▾" : "▸";
+    const q = document.createElement("div");
+    q.textContent = m.q;
+    q.title = m.q;
+    const cat = document.createElement("div"); cat.textContent = m.cat;
+    const bands = document.createElement("div"); bands.append(bandChips(m.bands || {}));
+    const ns = document.createElement("div"); ns.textContent = m.n_shocks;
+    const dp = document.createElement("div"); dp.textContent = `${(m.max_abs_dp * 100).toFixed(0)} pp`;
+    const vol = document.createElement("div"); vol.textContent = fmtBigUsd(m.shock_vol_total);
+    const start = document.createElement("div"); start.textContent = fmtPriceDate(m.start);
+    r.append(expand, q, cat, bands, ns, dp, vol, start);
+    tableHost.append(r);
+
+    if (m.id === selectedMarketId) {
+      const detail = document.createElement("div");
+      detail.className = "mt-detail";
+      detail.append(renderMarketDetail(m));
+      tableHost.append(detail);
+    }
+  }
+  if (browseFiltered.length > cap) {
+    const more = document.createElement("div");
+    more.className = "mt-more muted small";
+    more.textContent = `… ${(browseFiltered.length - cap).toLocaleString()} more — refine the search to see them`;
+    tableHost.append(more);
+  }
+};
+
+const renderMarketDetail = (m) => {
+  const det = marketsDetail[String(m.id)] || {series: [], shocks: [], wiki: []};
+  const root = document.createElement("div");
+  root.className = "md-root";
+
+  // Header
+  const head = document.createElement("div");
+  head.className = "md-head";
+  head.innerHTML = `<h3>${m.q}</h3>
+    <div class="md-meta muted">
+      ${m.cat} · opened ${fmtPriceDate(m.start)} → closed ${fmtPriceDate(m.end)} ·
+      ${m.n_shocks} shock${m.n_shocks === 1 ? "" : "s"} ·
+      ${m.is_novelty ? "novelty " : ""}${m.is_spurious ? "scheduled-event " : ""}
+    </div>`;
+  root.append(head);
+
+  // Price + volume charts
+  if (det.series.length) {
+    const series = det.series.map(([t, c, v]) => ({timestamp: new Date(t), close: +c, volume: +v}));
+    const shockTimes = det.shocks.map(s => ({
+      timestamp: new Date(s.t),
+      band: s.band || "no_news_in_window",
+    }));
+    const priceMark = Plot.plot({
+      height: 220,
+      width: 920,
+      marginLeft: 50,
+      x: {type: "utc", grid: true},
+      y: {label: "Probability", domain: [0, 1], grid: true},
+      color: {
+        domain: summary.band_order,
+        range: summary.band_order.map(b => summary.band_colors[b]),
+      },
+      marks: [
+        Plot.areaY(series, {x: "timestamp", y: "close", fill: "#3b82f6", fillOpacity: 0.15, curve: "step"}),
+        Plot.lineY(series, {x: "timestamp", y: "close", stroke: "#3b82f6", curve: "step"}),
+        Plot.ruleX(shockTimes, {x: "timestamp", stroke: "band", strokeWidth: 1.5, strokeDasharray: "4,2"}),
+      ],
+    });
+    const volMark = Plot.plot({
+      height: 80, width: 920, marginLeft: 50,
+      x: {type: "utc", axis: null}, y: {label: "Hourly volume (USDC)", grid: true},
+      marks: [Plot.areaY(series, {x: "timestamp", y: "volume", fill: "#94a3b8", fillOpacity: 0.7})],
+    });
+    root.append(priceMark, volMark);
+  }
+
+  // Shocks table
+  if (det.shocks.length) {
+    const h = document.createElement("h4"); h.textContent = `Shocks (${det.shocks.length})`; root.append(h);
+    const tbl = document.createElement("div"); tbl.className = "md-shocks";
+    const head = document.createElement("div"); head.className = "ms-row ms-head";
+    for (const lbl of ["Time (UTC)", "Δ price", "Volume", "Band", "Δt vs Wiki", "Wikipedia page"]) {
+      const c = document.createElement("div"); c.textContent = lbl; head.append(c);
+    }
+    tbl.append(head);
+    const sorted = [...det.shocks].sort((a, b) => Math.abs(b.dp) - Math.abs(a.dp));
+    for (const s of sorted) {
+      const row = document.createElement("div"); row.className = "ms-row";
+      if (s.band) row.style.borderLeftColor = summary.band_colors[s.band];
+      const cells = [
+        fmtDate(s.t),
+        `<strong>${fmtPctSigned(s.dp)}</strong>`,
+        fmtBigUsd(s.vol),
+        s.band ? `<span class="band-chip" style="background:${summary.band_colors[s.band]}">${summary.band_labels[s.band]}</span>` : "—",
+        s.dt_hours == null ? "—" : `<span style="color:${summary.band_colors[s.band] || '#888'}">${fmtHours(s.dt_hours)}</span>`,
+        s.wiki_page ? `<a href="https://en.wikipedia.org/wiki/${encodeURIComponent(s.wiki_page.replace(/ /g, "_"))}" target="_blank" rel="noopener">${s.wiki_page}</a>` : "—",
+      ];
+      for (const v of cells) {
+        const c = document.createElement("div"); c.innerHTML = v; row.append(c);
+      }
+      tbl.append(row);
+    }
+    root.append(tbl);
+  }
+
+  // Wikipedia revisions
+  if (det.wiki.length) {
+    const h = document.createElement("h4");
+    h.innerHTML = `Substantive Wikipedia revisions <span class="muted small">(top ${det.wiki.length} by absolute byte-change)</span>`;
+    root.append(h);
+    const wikiList = document.createElement("div"); wikiList.className = "md-wiki";
+    for (const w of det.wiki) {
+      const cleaned = cleanWikiComment(w.comment);
+      const wrap = document.createElement("div"); wrap.className = "mw-row";
+      const t = document.createElement("div"); t.className = "mw-time"; t.textContent = fmtDate(w.t);
+      const page = document.createElement("div"); page.className = "mw-page";
+      page.innerHTML = `<a href="https://en.wikipedia.org/wiki/${encodeURIComponent((w.page||"").replace(/ /g, "_"))}" target="_blank" rel="noopener">${w.page || "—"}</a>`;
+      const delta = document.createElement("div"); delta.className = "mw-delta";
+      delta.textContent = `${w.size_delta > 0 ? "+" : ""}${w.size_delta} B`;
+      delta.style.color = w.size_delta > 0 ? "#86efac" : "#fca5a5";
+      const cmt = document.createElement("div"); cmt.className = "mw-cmt";
+      cmt.textContent = cleaned || "—";
+      wrap.append(t, page, delta, cmt);
+      wikiList.append(wrap);
+    }
+    root.append(wikiList);
+  }
+
+  return root;
+};
+
+renderTable();
+display(tableHost);
+```
+
+```js
+// Re-render the table whenever the inputs change.
+selectedMarketId;  // dependency
+browseSearch;
+browseCategory;
+browseBand;
+includeFiltered;
+browseSort;
+renderTable();
+```
+
 <style>
 .card { background: var(--theme-foreground-faintest); border-radius: 8px; padding: 1rem; border-left: 4px solid #888; }
 .card.decisive.shock { border-left-color: #dc2626; }
@@ -395,4 +640,89 @@ display(auditList);
 .audit-row { padding: .5rem .75rem; border-radius: 4px; background: var(--theme-foreground-faintest); border-left: 3px solid #fb923c; }
 .audit-q { font-size: 0.95rem; }
 .audit-meta { font-size: 0.8rem; color: var(--theme-foreground-muted); margin-top: .15rem; }
+
+/* --- Market browser --- */
+.browse-summary { margin: .25rem 0 .75rem 0; font-size: 0.85rem; }
+.markets-table { display: flex; flex-direction: column; gap: 2px; font-size: 0.85rem; }
+.mt-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 90px 110px 60px 70px 80px 90px;
+  gap: 0.5rem;
+  padding: .35rem .5rem;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 4px;
+  background: var(--theme-foreground-faintest);
+}
+.mt-row:hover { background: rgba(255,255,255,0.05); }
+.mt-row.selected { background: rgba(59,130,246,0.15); }
+.mt-row.filtered-out { opacity: 0.55; }
+.mt-row.mt-head {
+  cursor: default;
+  background: transparent;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--theme-foreground-muted);
+}
+.mt-row > div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mt-row > div:nth-child(2) { font-weight: 500; }
+.mt-more { padding: .5rem; text-align: center; }
+.band-chips { display: inline-flex; gap: 2px; }
+.band-chip {
+  display: inline-block;
+  min-width: 1.4rem;
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: white;
+  font-size: 0.7rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.mt-detail {
+  background: var(--theme-foreground-faintest);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 0.25rem 0 0.5rem 0;
+}
+.md-head h3 { margin: 0 0 .25rem 0; }
+.md-meta { margin-bottom: .75rem; }
+.md-shocks, .md-wiki { display: flex; flex-direction: column; gap: 2px; margin: .5rem 0; font-size: 0.82rem; }
+.ms-row {
+  display: grid;
+  grid-template-columns: 140px 70px 80px 220px 110px minmax(0, 1fr);
+  gap: .5rem;
+  padding: .3rem .5rem;
+  border-left: 3px solid #888;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.03);
+  align-items: center;
+}
+.ms-row.ms-head {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--theme-foreground-muted);
+  border-left-color: transparent;
+  background: transparent;
+}
+.ms-row > div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ms-row a { color: #93c5fd; text-decoration: none; }
+.ms-row a:hover { text-decoration: underline; }
+.mw-row {
+  display: grid;
+  grid-template-columns: 140px 220px 90px minmax(0, 1fr);
+  gap: .5rem;
+  padding: .25rem .5rem;
+  font-size: 0.82rem;
+  align-items: center;
+}
+.mw-row:nth-child(odd) { background: rgba(255,255,255,0.025); }
+.mw-row > div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mw-time { color: var(--theme-foreground-muted); font-variant-numeric: tabular-nums; }
+.mw-page a { color: #93c5fd; text-decoration: none; }
+.mw-page a:hover { text-decoration: underline; }
+.mw-delta { font-variant-numeric: tabular-nums; text-align: right; }
+.mw-cmt { color: var(--theme-foreground-muted); font-style: italic; }
 </style>

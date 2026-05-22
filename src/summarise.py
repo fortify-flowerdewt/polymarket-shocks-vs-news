@@ -24,6 +24,7 @@ import polars as pl
 
 OUTPUT_DIR = Path("/Users/tom/projects/polymarketFraud/output")
 DASH_DIR = OUTPUT_DIR / "dashboard"
+DATA_DIR = Path("/Users/tom/projects/polymarketFraud/data")
 PRICE_DIR = DASH_DIR / "price_series"
 
 # Markets that are "novelty" / live-broadcast tracking — exclude from headline insider analysis
@@ -391,6 +392,175 @@ def main() -> None:
                 ]
         (DASH_DIR / "price_series.json").write_text(json.dumps(combined, default=str))
         print(f"Wrote {len(pred_to_market)} per-market price series (CSV + combined JSON)")
+
+    # 6. Browse-everything bundle: ALL 741 shortlisted markets, with their
+    # price series, shocks, and Wikipedia revisions. Compact for bundle size.
+    shortlist_df = pl.read_parquet(OUTPUT_DIR / "shocks_shortlist.parquet")
+    write_market_browser_bundle(aligned, shortlist_df)
+
+
+def write_market_browser_bundle(aligned: pl.DataFrame, shortlist: pl.DataFrame) -> None:
+    """Emit two files used by the dashboard's market-browser section.
+
+    * `markets_index.json`  – one row per market, lightweight metadata + counts.
+                              Loaded on every page hit.
+    * `markets_detail.json` – per-market deep-dive: price series, all shocks,
+                              substantive Wikipedia revisions. Loaded once on
+                              first interaction.
+    """
+    print("Building market-browser bundle...")
+    # Source tables
+    market_ids = shortlist.select(pl.col("market_id").unique()).to_series().to_list()
+    print(f"  {len(market_ids)} unique markets")
+
+    # ---- Price series (close + volume per hour) ---------------------------- #
+    # Get prediction_id ↔ market_id map and metadata from the shortlist itself
+    # (which already has these columns) joined with markets.parquet for fields
+    # we didn't denormalise into shortlist.
+    pred_to_market = (
+        shortlist.select(["market_id", "question", "category",
+                          "market_start_time", "close_time"]).unique("market_id")
+    )
+    # Look up prediction_id from the predictions table (outcome_idx = 0 = reference token).
+    predictions_meta = (
+        pl.read_parquet(DATA_DIR / "predictions.parquet")
+        .filter(pl.col("market_id").is_in(market_ids))
+        .filter(pl.col("outcome_idx") == 0)
+        .select(["prediction_id", "market_id"]).unique("market_id")
+    )
+    pred_to_market = pred_to_market.join(predictions_meta, on="market_id", how="left")
+    pred_ids = pred_to_market["prediction_id"].to_list()
+    ohlcv = (
+        pl.scan_parquet(DATA_DIR / "ohlcv_1h" / "**" / "*.parquet")
+        .filter(pl.col("prediction_id").is_in(pred_ids))
+        .select(["prediction_id", "timestamp", "open", "high", "low", "close",
+                 "volume", "trade_count"])
+        .collect()
+    )
+    pid_to_mid = dict(zip(pred_to_market["prediction_id"].to_list(),
+                          pred_to_market["market_id"].to_list()))
+    series_by_mid: dict[str, list] = {}
+    for pid, mid in pid_to_mid.items():
+        s = ohlcv.filter(pl.col("prediction_id") == pid).sort("timestamp")
+        if not s.shape[0]:
+            continue
+        # Compact array-of-arrays form to keep the bundle small.
+        series_by_mid[str(mid)] = [
+            [ts.isoformat(), round(c, 4), round(v, 2), int(tc)]
+            for ts, c, v, tc in zip(
+                s["timestamp"].to_list(),
+                s["close"].to_list(),
+                s["volume"].to_list(),
+                s["trade_count"].to_list(),
+            )
+        ]
+    print(f"  Price series collected for {len(series_by_mid)} markets")
+
+    # ---- Shocks per market ------------------------------------------------- #
+    shocks_full = pl.read_parquet(OUTPUT_DIR / "shocks.parquet").filter(
+        pl.col("market_id").is_in(market_ids)
+    )
+    aligned_lookup = {
+        (r["market_id"], r["shock_t"]): r for r in aligned.iter_rows(named=True)
+    }
+    shocks_by_mid: dict[str, list] = {}
+    for row in shocks_full.iter_rows(named=True):
+        mid = row["market_id"]
+        # Match with aligned to enrich with band/dt_nearest/wiki page
+        ar = aligned_lookup.get((mid, row["shock_time"]))
+        entry = {
+            "t": row["shock_time"].isoformat(),
+            "prev": round(row["prev_close"], 4),
+            "close": round(row["close"], 4),
+            "dp": round(row["dp"], 4),
+            "z": round(row["z_shock"], 2) if row.get("z_shock") is not None else None,
+            "vol": round(row["volume"], 2),
+        }
+        if ar:
+            entry["band"] = ar.get("band")
+            entry["dt_hours"] = (round(ar["dt_nearest_hours"], 3)
+                                 if ar.get("dt_nearest_hours") is not None else None)
+            entry["wiki_page"] = ar.get("nearest_wiki_page")
+            entry["wiki_comment"] = ar.get("nearest_comment")
+            entry["wiki_time"] = (ar["nearest_revision_time"].isoformat()
+                                  if ar.get("nearest_revision_time") else None)
+            entry["is_spurious"] = bool(ar.get("is_spurious"))
+            entry["is_novelty"] = bool(ar.get("is_novelty"))
+            entry["spurious_reason"] = ar.get("spurious_reason")
+        shocks_by_mid.setdefault(str(mid), []).append(entry)
+    print(f"  Shocks collected for {len(shocks_by_mid)} markets")
+
+    # ---- Wikipedia revisions per market ----------------------------------- #
+    wiki = pl.read_parquet(OUTPUT_DIR / "news_wikipedia.parquet")
+    wiki = wiki.filter(pl.col("market_id").is_in(market_ids))
+    # Cap revisions per market to keep bundle size manageable: top-50 by |size_delta|.
+    wiki_by_mid: dict[str, list] = {}
+    for mid, grp in wiki.group_by("market_id"):
+        mid_val = mid[0] if isinstance(mid, tuple) else mid
+        grp = grp.sort(pl.col("size_delta").abs(), descending=True).head(50)
+        grp = grp.sort("revision_time")
+        revs = []
+        for r in grp.iter_rows(named=True):
+            revs.append({
+                "t": r["revision_time"].isoformat() if r["revision_time"] else None,
+                "page": r["wiki_page"],
+                "size_delta": int(r["size_delta"]),
+                "comment": r.get("comment") or "",
+            })
+        wiki_by_mid[str(mid_val)] = revs
+    print(f"  Wikipedia revisions collected for {len(wiki_by_mid)} markets")
+
+    # ---- Markets index (lightweight metadata + counts) -------------------- #
+    # Aggregate band counts per market from aligned.
+    market_meta = pred_to_market.unique("market_id").select([
+        "market_id", "question", "category", "market_start_time", "close_time",
+    ])
+    markets_idx = []
+    for r in market_meta.iter_rows(named=True):
+        mid = r["market_id"]
+        market_shocks = shocks_by_mid.get(str(mid), [])
+        band_counts = {b: 0 for b in BAND_ORDER}
+        is_novelty = False
+        is_spurious = False
+        for s in market_shocks:
+            if s.get("band"):
+                band_counts[s["band"]] = band_counts.get(s["band"], 0) + 1
+            if s.get("is_novelty"):
+                is_novelty = True
+            if s.get("is_spurious"):
+                is_spurious = True
+        total_vol = sum((s["vol"] or 0) for s in market_shocks)
+        max_abs_dp = max((abs(s["dp"]) for s in market_shocks), default=0.0)
+        markets_idx.append({
+            "id": mid,
+            "q": r["question"],
+            "cat": r["category"],
+            "start": r["market_start_time"].isoformat() if r["market_start_time"] else None,
+            "end": r["close_time"].isoformat() if r["close_time"] else None,
+            "n_shocks": len(market_shocks),
+            "max_abs_dp": round(max_abs_dp, 4),
+            "shock_vol_total": round(total_vol, 0),
+            "bands": band_counts,
+            "is_novelty": is_novelty,
+            "is_spurious": is_spurious,
+        })
+    markets_idx.sort(key=lambda r: -r["shock_vol_total"])
+
+    # Write the two files.
+    (DASH_DIR / "markets_index.json").write_text(json.dumps(markets_idx, default=str, separators=(",", ":")))
+    detail = {
+        str(r["id"]): {
+            "series": series_by_mid.get(str(r["id"]), []),
+            "shocks": shocks_by_mid.get(str(r["id"]), []),
+            "wiki": wiki_by_mid.get(str(r["id"]), []),
+        }
+        for r in markets_idx
+    }
+    (DASH_DIR / "markets_detail.json").write_text(json.dumps(detail, default=str, separators=(",", ":")))
+
+    idx_size = (DASH_DIR / "markets_index.json").stat().st_size / 1e6
+    det_size = (DASH_DIR / "markets_detail.json").stat().st_size / 1e6
+    print(f"  Wrote markets_index.json ({idx_size:.1f} MB) and markets_detail.json ({det_size:.1f} MB)")
 
 
 if __name__ == "__main__":

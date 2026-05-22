@@ -1,0 +1,59 @@
+{
+  "n_shocks_in_shortlist": 549,
+  "n_shocks_in_shortlist_all": 1154,
+  "n_excluded_novelty": 327,
+  "n_excluded_spurious": 278,
+  "classification_counts": {
+    "no_news_in_window": 78,
+    "simultaneous": 18,
+    "shock_before_news": 271,
+    "news_before_shock": 182
+  },
+  "band_counts": {
+    "news_first_marginal": 29,
+    "shock_first_marginal": 62,
+    "no_news_in_window": 78,
+    "shock_clearly_first": 132,
+    "simultaneous_uncertain": 145,
+    "news_clearly_first": 103
+  },
+  "band_counts_spurious": {
+    "simultaneous_uncertain": 98,
+    "shock_clearly_first": 50,
+    "news_first_marginal": 28,
+    "no_news_in_window": 13,
+    "shock_first_marginal": 67,
+    "news_clearly_first": 22
+  },
+  "band_order": [
+    "shock_clearly_first",
+    "shock_first_marginal",
+    "simultaneous_uncertain",
+    "news_first_marginal",
+    "news_clearly_first",
+    "no_news_in_window"
+  ],
+  "band_colors": {
+    "shock_clearly_first": "#dc2626",
+    "shock_first_marginal": "#fb923c",
+    "simultaneous_uncertain": "#a3a3a3",
+    "news_first_marginal": "#86efac",
+    "news_clearly_first": "#16a34a",
+    "no_news_in_window": "#525252"
+  },
+  "band_labels": {
+    "shock_clearly_first": "Shock clearly first (>3h before edit)",
+    "shock_first_marginal": "Shock first, marginal (30 min\u20133 h)",
+    "simultaneous_uncertain": "Within \u00b130 min (below detector resolution)",
+    "news_first_marginal": "News first, marginal (30 min\u20133 h)",
+    "news_clearly_first": "News clearly first (>3h before shock)",
+    "no_news_in_window": "No Wikipedia edit in \u00b17 d"
+  },
+  "median_dt_nearest_hours": -0.23333333333333334,
+  "share_shock_clearly_first": 0.2802547770700637,
+  "share_shock_first_marginal": 0.1316348195329087,
+  "share_simultaneous_uncertain": 0.3078556263269639,
+  "share_news_first_marginal": 0.06157112526539278,
+  "share_news_clearly_first": 0.21868365180467092,
+  "wiki_caveat": "\u0394t is shock_time \u2212 Wikipedia_revision_time. Negative values mean the Polymarket shock preceded a Wikipedia edit. Two important nuances: (1) Wikipedia is itself edited only after a story breaks, so a small negative \u0394t is consistent with both insider trading AND a market reacting to public news faster than a Wikipedia editor reaches a keyboard. (2) Our shock_time is the start of an hourly OHLCV bar, so |\u0394t| \u2264 30 min is below the detector's own resolution and we mark these as 'simultaneous_uncertain'. Decisive cases are those with |\u0394t| > 3 h. GDELT (press-publication timestamps) is the next layer to disambiguate sub-hour cases."
+}
