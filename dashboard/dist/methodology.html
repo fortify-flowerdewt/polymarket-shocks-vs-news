@@ -8,14 +8,36 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
 <link rel="preload" as="style" href="./_import/custom-style.6d3ff779.css">
+<link rel="preload" as="style" href="./_npm/katex@0.17.0/dist/katex.min.css">
 <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
 <link rel="stylesheet" type="text/css" href="./_import/custom-style.6d3ff779.css">
-<link rel="modulepreload" href="./_observablehq/client.00f37301.js">
+<link rel="stylesheet" type="text/css" href="./_npm/katex@0.17.0/dist/katex.min.css">
+<link rel="modulepreload" href="./_observablehq/client.5690ab01.js">
 <link rel="modulepreload" href="./_observablehq/runtime.607a8173.js">
 <link rel="modulepreload" href="./_observablehq/stdlib.277aeab8.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/tex.10826b50.js">
+<link rel="modulepreload" href="./_npm/katex@0.17.0/61cbe9f1.js">
 <script type="module">
 
-import {define} from "./_observablehq/client.00f37301.js";
+import {define} from "./_observablehq/client.5690ab01.js";
+
+define({id: "e3321bec", inputs: ["tex","display"], body: async (tex,display) => {
+display(await(
+tex.block`\Delta t = t_{\text{shock}} - t_{\text{news}}`
+))
+}});
+
+define({id: "a239c38f", mode: "inline", inputs: ["tex","display"], body: async (tex,display) => {
+display(await(
+tex`\Delta t > 0`
+))
+}});
+
+define({id: "499da108", mode: "inline", inputs: ["tex","display"], body: async (tex,display) => {
+display(await(
+tex`\Delta t < 0`
+))
+}});
 
 define({id: "7ae665b8", mode: "inline", inputs: ["display"], body: async (display) => {
 display(await(
@@ -51,10 +73,10 @@ display(await(
 <h2 id="what-we-are-testing" tabindex="-1"><a class="observablehq-header-anchor" href="#what-we-are-testing">What we are testing</a></h2>
 <p>For a binary prediction market with a true probability θ, an efficient market reacts to <strong>public</strong> information as it arrives. A trade that moves the price <em>before</em> the information is public is, by definition, trading on private information — possibly inside knowledge.</p>
 <p>We operationalise this as:</p>
-<p>$$\Delta t = t_\text{shock} - t_\text{news}$$</p>
+<div class="observablehq observablehq--block"><observablehq-loading></observablehq-loading><!--:e3321bec:--></div>
 <ul>
-<li>$\Delta t &gt; 0$: news preceded the shock (the <strong>expected</strong> pattern for efficient markets reacting to public information).</li>
-<li>$\Delta t &lt; 0$: the shock preceded the news (the pattern consistent with <strong>insider trading</strong>, <em>modulo two important caveats</em>).</li>
+<li><observablehq-loading></observablehq-loading><!--:a239c38f:-->: news preceded the shock (the <strong>expected</strong> pattern for efficient markets reacting to public information).</li>
+<li><observablehq-loading></observablehq-loading><!--:499da108:-->: the shock preceded the news (the pattern consistent with <strong>insider trading</strong>, <em>modulo two important caveats</em>).</li>
 </ul>
 <p>The two caveats — which dominate the design of the rest of this page — are:</p>
 <ol>

@@ -10,10 +10,12 @@ For a binary prediction market with a true probability θ, an efficient market r
 
 We operationalise this as:
 
-$$\Delta t = t_\text{shock} - t_\text{news}$$
+```js
+tex.block`\Delta t = t_{\text{shock}} - t_{\text{news}}`
+```
 
-- $\Delta t > 0$: news preceded the shock (the **expected** pattern for efficient markets reacting to public information).
-- $\Delta t < 0$: the shock preceded the news (the pattern consistent with **insider trading**, *modulo two important caveats*).
+- ${tex`\Delta t > 0`}: news preceded the shock (the **expected** pattern for efficient markets reacting to public information).
+- ${tex`\Delta t < 0`}: the shock preceded the news (the pattern consistent with **insider trading**, *modulo two important caveats*).
 
 The two caveats — which dominate the design of the rest of this page — are:
 
