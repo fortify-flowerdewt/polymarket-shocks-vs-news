@@ -703,6 +703,11 @@ return {auditList};
 </div>
 <div class="panel panel-main exemplars-panel">
   <div class="panel-h panel-h-big">Top cases per band <span class="panel-sub">cleanest 10 examples for each lead/lag bucket — each card shows the ±72 h price window with the shock marked</span></div>
+  <div class="chart-key">
+    <span><span class="key-swatch key-price"></span>price (probability)</span>
+    <span><span class="key-swatch key-shock"></span>shock moment</span>
+    <span><span class="key-swatch key-wiki"></span>Wikipedia edit</span>
+  </div>
 <div class="observablehq observablehq--block"><!--:9d5aa5da:--></div>
 <div class="observablehq observablehq--block"><!--:96d3d948:--></div>
 <div class="observablehq observablehq--block"><!--:bb402e0d:--></div>
@@ -853,6 +858,25 @@ return {auditList};
 
 /* --- Exemplars (top cases per band) --- */
 .exemplars-panel { margin-bottom: 1.25rem; }
+.chart-key {
+  display: flex; gap: 1.25rem; align-items: center;
+  margin: 0.5rem 0 0.25rem 0;
+  font-size: 0.8rem;
+}
+.chart-key span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.key-swatch {
+  display: inline-block;
+  width: 26px;
+  height: 14px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.key-price {
+  background: linear-gradient(to top, rgba(96, 165, 250, 0.35), rgba(96, 165, 250, 0.35));
+  border-top: 2px solid #1e40af;
+}
+.key-shock { background: transparent; border-left: 2px dashed #dc2626; border-right: 2px dashed #dc2626; width: 14px; }
+.key-wiki  { background: transparent; border-left: 2px dashed #d97706; border-right: 2px dashed #d97706; width: 14px; }
 .exemplar-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-top: 1rem; }
 .exemplar { border-radius: 8px; padding: 1rem; border-left: 4px solid #888; }
 .exemplar .ex-row { display: flex; gap: .75rem; align-items: center; margin-bottom: .25rem; font-size: 0.85rem; }
