@@ -49,7 +49,26 @@ Tail the log:
 tail -f phase1/paper_trader.log
 ```
 
-Inspect the ledger any time:
+### Live ledger viewer (Day 2)
+
+A Streamlit dashboard that watches `ledger.sqlite` and auto-refreshes every
+10 seconds. Run it in a second terminal:
+
+```bash
+uv run streamlit run phase1/ledger_viewer.py
+```
+
+Opens at <http://localhost:8501>. Shows:
+
+- Headline KPIs: days running, observed trades, open / closed positions, realised PnL
+- **Live-vs-backtest panel** — $/$100 bet achieved vs the Phase 0 backtest target
+  ($6.50–$9.40 per $100 at 5 s latency). Flag turns red if PnL diverges materially.
+- Cumulative paper-PnL chart + daily PnL bars
+- Per-watchlist-wallet contribution
+- Open positions table (current exposure)
+- Recent observations + closed-position audit trail
+
+### Direct SQLite inspection
 
 ```bash
 sqlite3 phase1/ledger.sqlite
