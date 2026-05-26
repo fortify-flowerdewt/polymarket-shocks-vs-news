@@ -15,15 +15,14 @@ html, body, #observablehq-main {
   background: var(--dash-bg) !important;
 }
 
-#observablehq-main {
-  max-width: none !important;
-  width: 100% !important;
-  margin: 0 !important;
-}
+/* Let Observable's default sidebar+main flexbox layout work. We only
+   widen the inner content column from the very-narrow default (~640px)
+   to something comfortable for charts and tables. */
+#observablehq-main { max-width: none !important; }
 
 #observablehq-center {
-  max-width: none;
-  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
 }
@@ -32,8 +31,7 @@ html, body, #observablehq-main {
 #observablehq-center > .hero { margin-top: 0.5rem; }
 
 #observablehq-toc { display: none !important; }
-/* Sidebar is enabled but slimmed down. */
-#observablehq-sidebar { background: #e7eaf0 !important; min-width: 200px; }
+#observablehq-sidebar { background: #e7eaf0 !important; min-width: 220px; }
 
 /* Methodology modal trigger */
 .meth-trigger {
