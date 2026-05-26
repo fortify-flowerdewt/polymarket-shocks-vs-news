@@ -1,0 +1,71 @@
+{
+  "before": [
+    {
+      "wallet": "0x1d949\u20269100",
+      "hit_rate": 0.42,
+      "pnl": 700000,
+      "style": "Long-shot lottery"
+    },
+    {
+      "wallet": "0xa6a85\u20265009",
+      "hit_rate": 0.49,
+      "pnl": 432000,
+      "style": "Discretionary"
+    },
+    {
+      "wallet": "0x204f7\u20265e14",
+      "hit_rate": 0.51,
+      "pnl": 548000,
+      "style": "Institutional bot"
+    },
+    {
+      "wallet": "0xed61f\u20269aa3",
+      "hit_rate": 0.52,
+      "pnl": 280000,
+      "style": "Selective"
+    },
+    {
+      "wallet": "0xae363\u20268fb5",
+      "hit_rate": 0.58,
+      "pnl": 250000,
+      "style": "High hit-rate"
+    }
+  ],
+  "after": [
+    {
+      "wallet": "0xed61f\u20269aa3",
+      "hit_rate": 0.52,
+      "pnl": 288000,
+      "sharpe": 0.124,
+      "style": "Selective"
+    },
+    {
+      "wallet": "0x1cbea\u202612bc",
+      "hit_rate": 0.53,
+      "pnl": 86000,
+      "sharpe": 0.076,
+      "style": "Patient"
+    },
+    {
+      "wallet": "0x96e17\u202650aa",
+      "hit_rate": 0.55,
+      "pnl": 54000,
+      "sharpe": 0.058,
+      "style": "Selective"
+    },
+    {
+      "wallet": "0x1b5e2\u202683f8",
+      "hit_rate": 0.55,
+      "pnl": 49000,
+      "sharpe": 0.12,
+      "style": "Discretionary"
+    },
+    {
+      "wallet": "0xa9257\u2026e1c8",
+      "hit_rate": 0.54,
+      "pnl": 43000,
+      "sharpe": 0.056,
+      "style": "Mid-volume"
+    }
+  ]
+}

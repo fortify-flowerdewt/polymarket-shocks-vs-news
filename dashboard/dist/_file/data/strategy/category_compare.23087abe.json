@@ -1,0 +1,29 @@
+[
+  {
+    "variant": "All categories (sport+crypto+politics+...)",
+    "n_trades": 4351524,
+    "pnl": -10200521,
+    "pnl_per_100": -2.34,
+    "hit_rate": 0.5842,
+    "color": "#dc2626",
+    "note": "Dominated by crypto markets where the 'winning' wallets earn from making, not taking."
+  },
+  {
+    "variant": "Sports only (390 wallets)",
+    "n_trades": 1307603,
+    "pnl": 2736959,
+    "pnl_per_100": 2.09,
+    "hit_rate": 0.5074,
+    "color": "#86efac",
+    "note": "Same wallet selection, restricted to sports markets. Strategy flips sign."
+  },
+  {
+    "variant": "Sports only + variance filter (62 wallets)",
+    "n_trades": 84181,
+    "pnl": 1053908,
+    "pnl_per_100": 12.52,
+    "hit_rate": 0.558,
+    "color": "#16a34a",
+    "note": "Final strategy: 62 wallets, sports only. Per-trade edge is 6\u00d7 the broad-sports run."
+  }
+]

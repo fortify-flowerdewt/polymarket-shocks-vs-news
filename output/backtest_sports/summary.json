@@ -1,0 +1,14 @@
+{
+  "watchlist_size": 390,
+  "n_copy_trades": 1307603,
+  "n_wins": 663538,
+  "hit_rate": 0.5074460673461287,
+  "total_pnl": 2736959.529336957,
+  "avg_pnl_per_trade": 2.093111999083022,
+  "bet_size_usd": 100.0,
+  "slippage_ticks": 1,
+  "total_capital_at_risk_if_serial": 130760300.0,
+  "roi_if_serial": 0.02093111999083022,
+  "first_trade": "2024-02-11 22:55:18+00:00",
+  "last_trade": "2025-12-31 23:59:41+00:00"
+}

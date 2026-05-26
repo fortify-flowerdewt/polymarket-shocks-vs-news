@@ -1,0 +1,39 @@
+[
+  {
+    "bankroll": 1000,
+    "bet": 25,
+    "concurrent": 40,
+    "trades_per_day": 40,
+    "daily_pnl": 280,
+    "annual_pnl_low": 60000,
+    "annual_pnl_high": 80000
+  },
+  {
+    "bankroll": 10000,
+    "bet": 100,
+    "concurrent": 100,
+    "trades_per_day": 100,
+    "daily_pnl": 700,
+    "annual_pnl_low": 150000,
+    "annual_pnl_high": 220000
+  },
+  {
+    "bankroll": 50000,
+    "bet": 200,
+    "concurrent": 250,
+    "trades_per_day": 250,
+    "daily_pnl": 1750,
+    "annual_pnl_low": 380000,
+    "annual_pnl_high": 550000
+  },
+  {
+    "bankroll": 200000,
+    "bet": 500,
+    "concurrent": 400,
+    "trades_per_day": 400,
+    "daily_pnl": 2800,
+    "annual_pnl_low": 600000,
+    "annual_pnl_high": 800000,
+    "note": "Capacity ceiling approached \u2014 adverse selection grows beyond this."
+  }
+]

@@ -31,8 +31,9 @@ html, body, #observablehq-main {
 #observablehq-center h1:first-child,
 #observablehq-center > .hero { margin-top: 0.5rem; }
 
-#observablehq-toc,
-#observablehq-sidebar { display: none !important; }
+#observablehq-toc { display: none !important; }
+/* Sidebar is enabled but slimmed down. */
+#observablehq-sidebar { background: #e7eaf0 !important; min-width: 200px; }
 
 /* Methodology modal trigger */
 .meth-trigger {

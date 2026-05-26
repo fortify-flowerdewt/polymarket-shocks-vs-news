@@ -1,0 +1,13 @@
+{
+  "n_wallets_after_filter": 62,
+  "n_wallets_total_universe": 2480104,
+  "n_trades_backtest": 84181,
+  "total_pnl_usd": 1053908.3580098713,
+  "pnl_per_100_bet": 12.519551419083538,
+  "hit_rate": 0.5576317696392298,
+  "median_entry_price": 0.51,
+  "in_sample_first": "2024-05-20 21:06:05+00:00",
+  "in_sample_last": "2025-12-31 23:59:41+00:00",
+  "latency_target_seconds": 5,
+  "edge_captured_at_target_pct": 50
+}

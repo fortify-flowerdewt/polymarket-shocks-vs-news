@@ -1,0 +1,16 @@
+{
+  "in_sample": {
+    "label": "2024 \u2013 2025 (in-sample)",
+    "n_trades": 84181,
+    "hit_rate": 0.5576317696392298,
+    "pnl_total": 1053908.3580098713,
+    "pnl_per_100": 12.519551419083538
+  },
+  "out_of_sample": {
+    "label": "1\u201320 Jan 2026 (out-of-sample)",
+    "n_trades": 39476,
+    "hit_rate": 0.5574779612929375,
+    "pnl_total": 358229.8252749448,
+    "pnl_per_100": 9.074623195737784
+  }
+}
