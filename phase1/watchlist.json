@@ -1,0 +1,37 @@
+[
+  {
+    "address": "0xed61f86bb5298d2f27c21c433ce58d80b88a9aa3",
+    "historical_pnl": 288012.3489433211,
+    "historical_n_trades": 13803,
+    "historical_hit_rate": 0.5202492211838006,
+    "historical_sharpe": 0.12396278839212363
+  },
+  {
+    "address": "0x1cbea0d402f7e9179252c66599c26a37e1d712bc",
+    "historical_pnl": 85749.26392858228,
+    "historical_n_trades": 10818,
+    "historical_hit_rate": 0.5308744684784619,
+    "historical_sharpe": 0.07577098450102622
+  },
+  {
+    "address": "0x96e17ba97e081732a552f410eb35ee972cad50aa",
+    "historical_pnl": 53990.800494690906,
+    "historical_n_trades": 7359,
+    "historical_hit_rate": 0.5469493137654573,
+    "historical_sharpe": 0.057685302759133104
+  },
+  {
+    "address": "0x1b5e20a28d7115f10ce6190a5ae9a91169be83f8",
+    "historical_pnl": 48796.44564589165,
+    "historical_n_trades": 3825,
+    "historical_hit_rate": 0.5537254901960784,
+    "historical_sharpe": 0.11983811821069147
+  },
+  {
+    "address": "0xa92579f21a36bcda2c6f073fc9764481bb90e1c8",
+    "historical_pnl": 43177.79295741096,
+    "historical_n_trades": 5648,
+    "historical_hit_rate": 0.5421388101983002,
+    "historical_sharpe": 0.05645725612955188
+  }
+]
