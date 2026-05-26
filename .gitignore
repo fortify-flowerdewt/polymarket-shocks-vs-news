@@ -18,18 +18,26 @@ node_modules/
 # Root-anchored so we don't accidentally exclude dashboard/src/data/.
 /data/
 
-# ---- Caches and intermediate parquets (regenerable from the data/ sources) ----
+# ---- Caches and intermediate artifacts (regenerable from the data/ sources) ----
+# Everything in output/ is regenerable from the pipeline — except the published
+# memo at output/phase0/ which we deliberately keep.
 output/wiki_cache.json
 output/gdelt_cache.json
 output/shocks.parquet
+output/shocks_shortlist.parquet
 output/aligned_wiki.parquet
 output/news_wikipedia.parquet
 output/news_gdelt.parquet
+output/watchlist.parquet
+output/watchlist_sports.parquet
+output/backtest/
+output/backtest_sports/
+output/dashboard/
 output/*.log
 
-# But DO keep the small dashboard-data tarball under output/dashboard/
-# (summary.json, histogram.csv, by_category.csv, exemplars.json, price_series.json).
-# Those drive the static dashboard and are small (~1.7 MB combined).
+# Dashboard payload (dashboard/src/data/*) IS kept — those drive the live
+# GitHub Pages site and would require uploading the 5 GB HuggingFace dataset
+# to CI to regenerate, which is impractical.
 
 # ---- Editor / IDE ----
 .idea/
